@@ -1,0 +1,58 @@
+<RCC>
+  <qresource prefix="/buttons">
+    <file>Icons/aim_selected.ico</file>
+    <file>Icons/link_selected.ico</file>
+    <file>Icons/Restart.ico</file>
+    <file>Icons/Info.ico</file>
+    <file>Icons/Info2.ico</file>
+    <file>Icons/Loop.ico</file>
+    <file>Icons/Health.ico</file>
+    <file>Icons/Download.ico</file>
+    <file>Icons/Fullscreen.ico</file>
+    <file>Icons/Gear.ico</file>
+    <file>Icons/Gears.ico</file>
+    <file>Icons/Globe.ico</file>
+    <file>Icons/Hand.ico</file>
+    <file>Icons/Plane.ico</file>
+    <file>Icons/Down.ico</file>
+    <file>Icons/Left.ico</file>
+    <file>Icons/Right.ico</file>
+    <file>Icons/Up.ico</file>
+    <file>Icons/ZoomIn.ico</file>
+    <file>Icons/ZoomOut.ico</file>
+    <file>Icons/Pen.ico</file>
+    <file>Icons/Save.ico</file>
+    <file>Icons/Cancel.ico</file>
+    <file>Icons/AddBeacon.ico</file>
+    <file>Icons/Link.ico</file>
+    <file>Icons/Search.ico</file>
+  </qresource>
+  <qresource prefix="icons">
+    <file>Icons/fish.png</file>
+    <file>Icons/order.ico</file>
+    <file>Icons/pause.ico</file>
+    <file>Icons/wave_new.ico</file>
+    <file>Icons/content-reorder.ico</file>
+    <file>Icons/link2.ico</file>
+    <file>Icons/link3.ico</file>
+    <file>Icons/start.ico</file>
+    <file>Icons/anchor3.ico</file>
+    <file>Icons/link-broken1.ico</file>
+    <file>Icons/toggle-right-alt2.ico</file>
+    <file>Icons/bullet_black.png</file>
+    <file>Icons/bullet_blue.png</file>
+    <file>Icons/bullet_green.png</file>
+    <file>Icons/bullet_red.png</file>
+    <file>Icons/bullet_toggle_minus.png</file>
+    <file>Icons/bullet_white.png</file>
+    <file>Icons/link_break.png</file>
+    <file>Icons/lock.png</file>
+    <file>Icons/Anchor.ico</file>
+  </qresource>
+  <qresource prefix="alarm">
+    <file>Icons/bell.png</file>
+    <file>Icons/bullet_feed.png</file>
+    <file>Icons/error.png</file>
+    <file>Icons/exclamation.png</file>
+  </qresource>
+</RCC>
