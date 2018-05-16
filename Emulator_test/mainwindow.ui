@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>408</width>
+    <width>429</width>
     <height>842</height>
    </rect>
   </property>
@@ -99,7 +99,7 @@
           </font>
          </property>
          <property name="currentIndex">
-          <number>3</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tabAIS">
           <attribute name="title">
@@ -128,7 +128,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>306</width>
+                <width>367</width>
                 <height>441</height>
                </rect>
               </property>
@@ -511,7 +511,7 @@ color: rgb(0, 0, 127);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>346</width>
+                <width>367</width>
                 <height>441</height>
                </rect>
               </property>
@@ -653,7 +653,7 @@ color: rgb(0, 0, 127);</string>
                     </property>
                     <property name="icon">
                      <iconset resource="res.qrc">
-                      <normaloff>:/icons/Icons/pause.ico</normaloff>:/icons/Icons/pause.ico</iconset>
+                      <normaloff>:/icons/Icons/vessel_paused.ico</normaloff>:/icons/Icons/vessel_paused.ico</iconset>
                     </property>
                     <property name="flat">
                      <bool>true</bool>
@@ -714,7 +714,7 @@ color: rgb(0, 0, 127);</string>
          </widget>
          <widget class="QWidget" name="tabLAG">
           <attribute name="title">
-           <string>LAG</string>
+           <string>Лаг</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_17">
            <property name="leftMargin">
@@ -739,8 +739,8 @@ color: rgb(0, 0, 127);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>361</width>
-                <height>451</height>
+                <width>367</width>
+                <height>468</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1176,7 +1176,7 @@ color: rgb(0, 0, 127);</string>
          </widget>
          <widget class="QWidget" name="tabNAVTEX">
           <attribute name="title">
-           <string>NAVTEX</string>
+           <string>Навтекс</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_10">
            <property name="leftMargin">
@@ -1201,7 +1201,7 @@ color: rgb(0, 0, 127);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>346</width>
+                <width>367</width>
                 <height>441</height>
                </rect>
               </property>
@@ -1659,7 +1659,7 @@ color: rgb(0, 0, 127);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>83</width>
+                <width>98</width>
                 <height>111</height>
                </rect>
               </property>
@@ -1785,8 +1785,8 @@ color: rgb(0, 0, 127);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>306</width>
-                <height>441</height>
+                <width>221</width>
+                <height>196</height>
                </rect>
               </property>
               <attribute name="label">
@@ -2037,7 +2037,7 @@ color: rgb(0, 0, 127);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>346</width>
+                <width>367</width>
                 <height>441</height>
                </rect>
               </property>
@@ -2392,7 +2392,7 @@ color: rgb(0, 0, 127);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>408</width>
+     <width>429</width>
      <height>21</height>
     </rect>
    </property>
@@ -2631,5 +2631,54 @@ color: rgb(0, 0, 127);</string>
  <resources>
   <include location="res.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>bnEditVessel</sender>
+   <signal>clicked()</signal>
+   <receiver>actionEditVessel</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>104</x>
+     <y>131</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bnAddVessel</sender>
+   <signal>clicked()</signal>
+   <receiver>actionNewVessel</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>70</x>
+     <y>131</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bnRemoveVessel</sender>
+   <signal>clicked()</signal>
+   <receiver>actionRemoveVessel</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>138</x>
+     <y>131</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

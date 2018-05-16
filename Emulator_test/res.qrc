@@ -28,6 +28,8 @@
     <file>Icons/Search.ico</file>
   </qresource>
   <qresource prefix="icons">
+    <file>Icons/vessel_paused.ico</file>
+    <file>Icons/vessel_start.ico</file>
     <file>Icons/fish.png</file>
     <file>Icons/order.ico</file>
     <file>Icons/pause.ico</file>

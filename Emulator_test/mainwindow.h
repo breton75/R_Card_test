@@ -118,6 +118,7 @@ private slots:
     
     void on_updateMapObjectInfo(SvMapObject* mapObject);
     void on_updateVesselById(int id);
+    void on_updateVesselActive(int id);
     
     void on_areaSelectionChanged();
     void currentVesselListItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
@@ -131,6 +132,7 @@ private slots:
     
     void on_actionNewVessel_triggered();
     void on_actionEditVessel_triggered();
+    void on_actionRemoveVessel_triggered();
     
     void stateChanged(States state);
     
@@ -152,8 +154,6 @@ private slots:
     void on_echoBeamsUpdated(ech::Beam *bl);
     
     void on_cbMeasureUnits_currentIndexChanged(int index);
-    
-    void on_actionRemoveVessel_triggered();
     
     void on_bnSetActive_clicked();
     

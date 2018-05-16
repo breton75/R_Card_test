@@ -203,6 +203,12 @@ void area::SvArea::setUp(QString areaName, const geo::BOUNDS &bounds)
   view = new SvAreaView(widgetMap, &_area_data);
   view->setAreaScene(scene);
   
+  _trackSelected = AppParams::readParam(this, QString("AREA_%1").arg(_area_data.area_name), "TrackSelected", true).toBool();
+  for(AreaButton *btn: buttonsTop) {
+    if(btn->type() == bntTrackSelected)
+      btn->setChecked(_trackSelected);
+  }
+  
   /* задаем масштаб */
   _area_data.scale = AppParams::readParam(this, QString("AREA_%1").arg(_area_data.area_name), "Scale", 0.64).toReal();
   setScale(_area_data.scale);
@@ -233,6 +239,7 @@ area::SvArea::~SvArea()
   
   AppParams::saveWindowParams(this, size(), pos(), windowState(), QString("AREA_%1").arg(_area_data.area_name));
   AppParams::saveParam(this, QString("AREA_%1").arg(_area_data.area_name), "Scale", _area_data.scale);
+  AppParams::saveParam(this, QString("AREA_%1").arg(_area_data.area_name), "TrackSelected", _trackSelected);
   
   deleteLater();
 }

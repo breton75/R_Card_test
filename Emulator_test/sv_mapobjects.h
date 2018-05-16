@@ -414,8 +414,8 @@ class SvMapObjectOtherVessel : public SvMapObjectVesselAbstract
       QPen p(QBrush(QColor(INACTIVE_VESSEL_COLOR)), 2);
       QBrush b(Qt::NoBrush);
       
-      setBrush(isActive ? brush() : b);
-      setPen(isActive ? pen() : p);
+      setBrush(isActive ? _default_brush : b);
+      setPen(isActive ? _default_pen : p);
       this->update(this->boundingRect());
     }
     

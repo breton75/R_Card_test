@@ -53,7 +53,8 @@
 
 #define SQL_WHERE_SELF "WHERE vessels.self = %1 "
 #define SQL_WHERE_ID   "WHERE vessels.id = %1 "
-#define SQL_WHERE_LAST_INSERTED "WHERE vessels.id = last_insert_rowid();"
+#define SQL_WHERE_LAST_INSERTED "WHERE vessels.id = (select MAX(id) from vessels)"
+//last_insert_rowid();"
 
 
 #define SQL_ORDER_BY_VESSELS_ID_ASC "ORDER BY vessels.id ASC;"
@@ -66,8 +67,11 @@
 
 #define SQL_SELECT_LAST_INSERTED_VESSEL (SQL_SELECT_VESSELS SQL_WHERE_LAST_INSERTED)
 
+#define SQL_UPDATE_VESSEL_ACTIVE "update vessels set is_active=%1 where id=%2"
 
-#define SQL_INSERT_NEW_VESSEL "INSERT INTO vessels (self) VALUES (%1);"
+#define SQL_INSERT_NEW_VESSEL "INSERT INTO vessels (is_active, self) VALUES (1, %1);"
+
+#define SQL_DELETE_VESSEL "DELETE FROM vessels WHERE id=%1"
 
 #define SQL_INSERT_NEW_AIS "INSERT INTO ais (vessel_id, " CR \
                            "                 static_mmsi, " CR \

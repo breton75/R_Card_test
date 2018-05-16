@@ -73,24 +73,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tabWidget->setCurrentIndex(AppParams::readParam(this, "General", "LastTab", 0).toInt());
     ui->tabWidget->currentWidget()->findChild<QToolBox*>()->setCurrentIndex(AppParams::readParam(this, "General", "LastToolBox", 0).toInt());
     
-//    AppParams::WindowParams p;
-//    p = AppParams::readWindowParams(this);
-//    resize(p.size);
-//    move(p.position);
-//    setWindowState(p.state);
-//    ui->centralWidget->resize(AppParams::readParam(this, "MAIN WINDOW", "size", QSize(200, 400)).toSize());
-
-    /* параметры окна графики */
-//    AppParams::WindowParams gw = AppParams::readWindowParams(this, "AREA WINDOW");
-//    ui->dockGraphics->resize(gw.size);
-//    ui->dockGraphics->move(gw.position);
-//    ui->dockWidget->setWindowState(gw.state);
-
-    /* параметры окна информации о текущем объекте */
-  //  AppParams::WindowParams iw = AppParams::readWindowParams(this, "INFO WINDOW");
-  //  ui->dockCarrentInfo->resize(iw.size);
-  //  ui->dockCarrentInfo->move(iw.position);
-  //  ui->dockWidget->setWindowState(gw.state);
 
     _db_file_name = AppParams::readParam(this, "General", "db", "rcard.db").toString();
     _depth_file_name = AppParams::readParam(this, "General", "DepthMapImage", "mountain.png").toString();
@@ -104,6 +86,11 @@ MainWindow::MainWindow(QWidget *parent) :
     _font_default.setItalic(false);
     _font_inactive.setItalic(true);
     _font_nolink.setItalic(true);
+    
+    ui->listVessels->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->listVessels->setSelectionMode(QAbstractItemView::SingleSelection);
+    
+//    qApp->setOverrideCursor(QCursor(Qt::ArrowCursor));
 
 }
 
@@ -388,6 +375,16 @@ MainWindow::~MainWindow()
   
   save_devices_params();
   
+  for(int id: VESSELs->keys()) delete VESSELs->value(id);
+  
+  for(int id: LISTITEMs->keys()) delete LISTITEMs->value(id);
+
+  delete AISs;
+  delete GPSs;
+  delete VESSELs;
+  delete _navtex;
+
+  
   QString s = AppParams::saveLayout(this);
   
 //  AppParams::saveWindowParams(this, this->size(), this->pos(), this->windowState());
@@ -397,6 +394,7 @@ MainWindow::~MainWindow()
   AppParams::saveParam(this, "General", "LastToolBox", ui->tabWidget->currentWidget()->findChild<QToolBox*>()->currentIndex());
   //  AppParams::saveParam(this, "GENERAL", "AISRadius", QVariant(ui->dspinAISRadius->value()));
 
+  qDebug() << "close 1";
   delete ui;
   
 }
@@ -1004,11 +1002,14 @@ void MainWindow::on_areaSelectionChanged()
     
   ui->listVessels->setCurrentItem(LISTITEMs->value(_selected_vessel_id));
   
-  bool b = ui->listVessels->currentRow() > -1;
+  bool b = (_current_state == sStopped) && (ui->listVessels->currentRow() > -1);
   ui->actionEditVessel->setEnabled(b); 
   ui->actionRemoveVessel->setEnabled(b && (_selected_vessel_id != _self_vessel->id)); 
   ui->bnRemoveVessel->setEnabled(b && (_selected_vessel_id != _self_vessel->id));
   ui->bnEditVessel->setEnabled(b);
+  ui->bnSetActive->setEnabled(b && (_selected_vessel_id != _self_vessel->id));
+  
+  on_updateVesselActive(_selected_vessel_id);
   
   connect(ui->listVessels, &QListWidget::currentItemChanged, this, &MainWindow::currentVesselListItemChanged);
   
@@ -1016,13 +1017,13 @@ void MainWindow::on_areaSelectionChanged()
 
 void MainWindow::currentVesselListItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
 {
+  Q_UNUSED(previous);
+  
   disconnect(_area->scene, SIGNAL(selectionChanged()), this, SLOT(on_areaSelectionChanged()));
-
   foreach (SvMapObject* obj, _area->scene->mapObjects()) 
     obj->setSelected(obj->id() == LISTITEMs->key(current)); 
   
   on_areaSelectionChanged();
-  
   
   connect(_area->scene, SIGNAL(selectionChanged()), this, SLOT(on_areaSelectionChanged()));
   
@@ -1156,8 +1157,8 @@ void MainWindow::on_updateMapObjectInfo(SvMapObject* mapObject)
                                        .arg(a->staticVoyageData()->destination)
                                        .arg(a->staticVoyageData()->draft)
                                        .arg(a->staticVoyageData()->team)
-                                       .arg(a->dynamicData()->geoposition.latitude, 0, 'f', 4)
-                                       .arg(a->dynamicData()->geoposition.longtitude, 0, 'f', 4)
+                                       .arg(a->dynamicData()->geoposition.latitude, 0, 'f', 6)
+                                       .arg(a->dynamicData()->geoposition.longtitude, 0, 'f', 6)
                                        .arg(a->dynamicData()->geoposition.course)
                                        .arg(QChar(176))
                                        .arg(a->dynamicData()->geoposition.speed * CMU.ConvertKoeff, 0, 'f', 1)
@@ -1203,6 +1204,20 @@ void MainWindow::on_updateVesselById(int id)
     
     
   }
+}
+
+void MainWindow::on_updateVesselActive(int id)
+{
+  if(VESSELs->find(id) == VESSELs->end())
+    return;
+  
+  bool isActive = VESSELs->value(id)->isActive();
+    
+  LISTITEMs->value(id)->setTextColor(isActive ? QColor(DEFAULT_VESSEL_PEN_COLOR) : QColor(INACTIVE_VESSEL_COLOR));
+  LISTITEMs->value(id)->setFont(isActive ? _font_default : _font_inactive);
+  LISTITEMs->value(id)->setIcon(isActive ? QIcon(":/icons/Icons/bullet_white.png") : QIcon(":/icons/Icons/bullet_red.png"));
+  ui->bnSetActive->setIcon(isActive ? QIcon(":/icons/Icons/vessel_paused.ico") : QIcon(":/icons/Icons/vessel_start.ico"));
+  
 }
 
 void MainWindow::update_NAVTEX_data()
@@ -1640,6 +1655,47 @@ void MainWindow::on_actionEditVessel_triggered()
   editVessel(_selected_vessel_id);
 }
 
+void MainWindow::on_actionRemoveVessel_triggered()
+{
+  if(ui->listVessels->selectedItems().count() == 0)
+    return;
+  
+  /** ------ пытаемся удалить запись о судне в БД --------- **/
+  try {
+//    QSqlError err = SQLITE->execSQL(QString(SQL_DELETE_VESSEL).arg(_selected_vessel_id));
+//    if(QSqlError::NoError != err.type())
+//      _exception.raise(err.databaseText());
+      
+    disconnect(ui->listVessels, &QListWidget::currentItemChanged, this, &MainWindow::currentVesselListItemChanged);
+    
+    int row = ui->listVessels->currentRow(); // selectedItems().first()-> ->listWidget()-> currentRow();
+    
+//    delete AISs->take(_selected_vessel_id);
+//    delete GPSs->take(_selected_vessel_id);
+    _area->scene->removeMapObject(VESSELs->value(_selected_vessel_id)->mapObject()->selection());
+    _area->scene->removeMapObject(VESSELs->value(_selected_vessel_id)->mapObject()->identifier());
+    _area->scene->removeMapObject(VESSELs->value(_selected_vessel_id)->mapObject());
+    delete VESSELs->take(_selected_vessel_id);
+    AISs->remove(_selected_vessel_id);
+    GPSs->remove(_selected_vessel_id);
+    
+    
+    ui->listVessels->takeItem(row);
+    delete LISTITEMs->take(_selected_vessel_id);
+
+    connect(ui->listVessels, &QListWidget::currentItemChanged, this, &MainWindow::currentVesselListItemChanged);
+    
+    ui->listVessels->setCurrentRow(row - 1);
+    
+  }
+  
+  catch(SvException& e) {
+    
+    log << svlog::Time << svlog::Critical << e.err << svlog::endl;
+    
+  }
+}
+
 void MainWindow::on_bnDropDynamicData_clicked()
 {
   int msgbtn = QMessageBox::question(0, "Подтверждение", "Текущие данные о местоположении судна(ов) будут сброшены.\nДля выбранного судна - \"Да\"\n"
@@ -1870,11 +1926,6 @@ void MainWindow::on_cbMeasureUnits_currentIndexChanged(int index)
   
 }
 
-void MainWindow::on_actionRemoveVessel_triggered()
-{
-    
-}
-
 
 void MainWindow::on_bnSetActive_clicked()
 {
@@ -1884,13 +1935,21 @@ void MainWindow::on_bnSetActive_clicked()
   if(VESSELs->find(_selected_vessel_id) == VESSELs->end())
     return;
   
-  vsl::SvVessel* vessel = VESSELs->value(_selected_vessel_id);
-  vessel->setActive(!vessel->isActive());
-  vessel->mapObject()->setActive(vessel->isActive());
-
-  LISTITEMs->value(_selected_vessel_id)->setTextColor(vessel->isActive() ? QColor(DEFAULT_VESSEL_PEN_COLOR) : QColor(INACTIVE_VESSEL_COLOR));
-  LISTITEMs->value(_selected_vessel_id)->setFont(vessel->isActive() ? _font_default : _font_inactive);
-  LISTITEMs->value(_selected_vessel_id)->setIcon(vessel->isActive() ? QIcon(":/icons/Icons/bullet_white.png") : QIcon(":/icons/Icons/bullet_red.png"));
   
-//  update_vessel_by_id(_selected_vessel_id);
+  vsl::SvVessel* vessel = VESSELs->value(_selected_vessel_id);
+  bool newActive = !vessel->isActive();
+  
+  QSqlError err = SQLITE->execSQL(QString(SQL_UPDATE_VESSEL_ACTIVE).arg(newActive).arg(_selected_vessel_id));
+  if(err.type() != QSqlError::NoError) {
+    
+    log << svlog::Critical << svlog::Time << err.databaseText() << svlog::endl;
+    return;
+    
+  }
+  
+  vessel->setActive(newActive);
+  vessel->mapObject()->setActive(newActive);
+
+  on_updateVesselActive(_selected_vessel_id);
+  
 }

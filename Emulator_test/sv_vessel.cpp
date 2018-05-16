@@ -21,6 +21,8 @@ vsl::SvVessel::~SvVessel()
   if(_ais) delete _ais;
   if(_lag) delete _lag;
   if(_map_object) delete _map_object;
+  if(_multi_echo) delete _multi_echo;
+  if(_fish_echo) delete _fish_echo;
   
   deleteLater();
   
