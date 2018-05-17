@@ -46,7 +46,9 @@ SOURCES += \
     sv_mapobjects.cpp \
     sv_echo.cpp \
     sv_lag.cpp \
-    sv_navtex.cpp
+    sv_navtex.cpp \
+    ../../svlib/sv_tcpserverclient.cpp \
+    ../../svlib/sv_secondmeter.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -70,7 +72,9 @@ HEADERS += \
     sv_mapobjects.h \
     sv_echo.h \
     sv_lag.h \
-    sv_navtex.h
+    sv_navtex.h \
+    ../../svlib/sv_tcpserverclient.h \
+    ../../svlib/sv_secondmeter.h
 
 FORMS += \
         mainwindow.ui \

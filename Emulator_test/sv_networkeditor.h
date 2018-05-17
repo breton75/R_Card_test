@@ -22,7 +22,7 @@ struct NetworkParams {
   int protocol = QAbstractSocket::UdpSocket;
   quint32 ip = QHostAddress::Broadcast;
   quint32 ifc;
-  quint32 port = 30000;
+  quint16 port = 30000;
   idev::SvSimulatedDeviceTypes dev_type;
   QString description = "";
 };

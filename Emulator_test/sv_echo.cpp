@@ -15,11 +15,8 @@ ech::SvECHOAbstract::SvECHOAbstract(int vessel_id, const geo::GEOPOSITION &geopo
   _map_height_meters = 1000 * geo::lat2lat_distance(_bounds.min_lat, _bounds.max_lat, (_bounds.max_lon + _bounds.min_lon) / 2.0);
 //  qDebug() << _map_width_meters << _map_height_meters;
   
-  if(!_depth_map_image.load(imgpath)) {
-    
+  if(!_depth_map_image.load(imgpath))
     _log << svlog::Critical << svlog::Time << QString("Не удалось загрузить файл %1").arg(imgpath) << svlog::endl;
-    
-  }
   
   _koeff_lon = _map_width_meters / (_bounds.max_lon - _bounds.min_lon); // / 1000;
   _koeff_lat = _map_height_meters / (_bounds.max_lat - _bounds.min_lat); // / 1000;
@@ -31,10 +28,90 @@ ech::SvECHOAbstract::~SvECHOAbstract()
   deleteLater();
 }
 
+bool ech::SvECHOAbstract::open()
+{
+  connect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
+  _isOpened = true;
+  return _isOpened;
+}
+
+void ech::SvECHOAbstract::close()
+{ 
+  stop();
+  disconnect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
+  _isOpened = false;
+}
+
+bool ech::SvECHOAbstract::start(quint32 msecs)
+{
+  Q_UNUSED(msecs);
+  
+  if(!_isOpened)
+    return false;
+  
+  if(_udp) delete _udp;
+  _udp = nullptr;
+  
+  if(_tcp) delete _tcp;
+  _tcp = nullptr;
+  
+  if(_params.protocol == QAbstractSocket::UdpSocket) {
+  
+    _udp = new QUdpSocket();
+
+  }
+  else {
+    
+    _tcp = new svtcp::SvTcpServer(_log, svtcp::DoNotLog, svtcp::DoNotLog);
+    if(!_tcp->startServer(_params.port)) {
+      
+      _log << svlog::Critical << svlog::Time << QString("Ошибка при запуске сервера TCP: %1").arg(_tcp->lastError()) << svlog::endl;
+      
+      delete _tcp;
+      
+      return false;
+      
+    }
+    
+  }
+  
+//  _udp->s MulticastInterface(QNetworkInterface::interfaceFromIndex(_params.ifc));
+
+  _clearance = msecs;
+      
+  return true;
+}
+
+void ech::SvECHOAbstract::stop()
+{
+  if(_udp) delete _udp;
+  _udp = nullptr;
+  
+  if(_tcp) {
+    
+    _tcp->stopServer();
+    delete _tcp;
+    
+  }
+  
+  _tcp = nullptr;
+  
+}
+
 void ech::SvECHOAbstract::write(const QByteArray &packet)
 {
   if(!packet.isEmpty()) {
-    _udp->writeDatagram(packet, QHostAddress(_params.ip), _params.port);
+    
+    if(_udp) {
+      
+      _udp->writeDatagram(packet, QHostAddress(_params.ip), _params.port);
+      
+    }
+    else if(_tcp) {
+      
+      _tcp->sendToAll(packet);
+      
+    }
    
 //    _log << svlog::Attention << svlog::Time << QString("written: %1 bytes").arg(message.length()) << svlog::endl;
     
@@ -91,41 +168,6 @@ void ech::SvECHOMulti::setBeamCount(int count)
     _beams.last()->angle = A - stepA * i;
         
   }
-}
-  
-bool ech::SvECHOMulti::open()
-{
-  connect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
-  _isOpened = true;
-  return _isOpened;
-}
-
-void ech::SvECHOMulti::close()
-{ 
-  stop();
-  disconnect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
-  _isOpened = false;
-}
-
-bool ech::SvECHOMulti::start(quint32 msecs)
-{
-  if(!_isOpened)
-    return false;
-  
-  if(_udp) delete _udp;
-  
-  _udp = new QUdpSocket();
-//  _udp->s MulticastInterface(QNetworkInterface::interfaceFromIndex(_params.ifc));
-
-  _clearance = msecs;
-      
-  return true;
-}
-
-void ech::SvECHOMulti::stop()
-{
-  if(_udp) delete _udp;
-  _udp = nullptr;
 }
 
 void ech::SvECHOMulti::passed1m(const geo::GEOPOSITION& geopos)
@@ -184,41 +226,6 @@ ech::SvECHOFish::SvECHOFish(int vessel_id, const geo::GEOPOSITION &geopos, const
 void ech::SvECHOFish::setFishCount(int count)
 {
   _fish_count = count;
-}
-  
-bool ech::SvECHOFish::open()
-{
-  connect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
-  _isOpened = true;
-  return _isOpened;
-}
-
-void ech::SvECHOFish::close()
-{ 
-  stop();
-  disconnect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
-  _isOpened = false;
-}
-
-bool ech::SvECHOFish::start(quint32 msecs)
-{
-  if(!_isOpened)
-    return false;
-  
-  if(_udp) delete _udp;
-  
-  _udp = new QUdpSocket();
-//  _udp->s MulticastInterface(QNetworkInterface::interfaceFromIndex(_params.ifc));
-
-  _clearance = msecs;
-      
-  return true;
-}
-
-void ech::SvECHOFish::stop()
-{
-  if(_udp) delete _udp;
-  _udp = nullptr;
 }
 
 void ech::SvECHOFish::passed1m(const geo::GEOPOSITION& geopos)

@@ -394,7 +394,6 @@ MainWindow::~MainWindow()
   AppParams::saveParam(this, "General", "LastToolBox", ui->tabWidget->currentWidget()->findChild<QToolBox*>()->currentIndex());
   //  AppParams::saveParam(this, "GENERAL", "AISRadius", QVariant(ui->dspinAISRadius->value()));
 
-  qDebug() << "close 1";
   delete ui;
   
 }
@@ -1165,7 +1164,6 @@ void MainWindow::on_updateMapObjectInfo(SvMapObject* mapObject)
                                        .arg(CMU.SpeedDesign)
                                        .arg(a->navStatus()->name).toUtf8());
       }
-
         
       break;
     }

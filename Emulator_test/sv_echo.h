@@ -15,10 +15,12 @@
 //#include <QNetworkDatagram>
 #include <QtGui/QImage>
 
+#include "../../svlib/sv_log.h"
+#include "../../svlib/sv_tcpserverclient.h"
+
 #include "geo.h"
 #include "sv_gps.h"
 #include "sv_idevice.h"
-#include "../../svlib/sv_log.h"
 #include "nmea.h"
 #include "sv_networkeditor.h"
 
@@ -115,11 +117,11 @@ public:
   
   void setNetworkParams(NetworkParams params) { _params = params; }
 
-  virtual bool open() {  }
-  virtual void close() {  }
+  bool open();
+  void close();
   
-  virtual bool start(quint32 msecs) {  }
-  virtual void stop() {  }
+  bool start(quint32 msecs);
+  void stop();
   
   friend class ech::SvECHOMulti;
   friend class ech::SvECHOFish;
@@ -134,7 +136,7 @@ private:
   qreal _koeff_lon = 1.0;
   
   QUdpSocket *_udp = nullptr;
-  QTcpServer *_tcp = nullptr;
+  svtcp::SvTcpServer *_tcp = nullptr;
   
   geo::GEOPOSITION _current_geoposition;
   geo::BOUNDS _bounds;
@@ -175,11 +177,11 @@ public:
 
   idev::SvSimulatedDeviceTypes type() const { return idev::sdtEchoMulti; }
   
-  bool open();
-  void close();
+//  bool open();
+//  void close();
   
-  bool start(quint32 msecs);
-  void stop();
+//  bool start(quint32 msecs);
+//  void stop();
   
 private:
   QList<ech::Beam*> _beams;
@@ -206,11 +208,11 @@ public:
 
   idev::SvSimulatedDeviceTypes type() const { return idev::sdtEchoFish; }
   
-  bool open();
-  void close();
+//  bool open();
+//  void close();
   
-  bool start(quint32 msecs);
-  void stop();
+//  bool start(quint32 msecs);
+//  void stop();
   
 private:
   ech::Beam* _beam;

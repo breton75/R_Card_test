@@ -21,7 +21,7 @@ SvNetworkEditor::SvNetworkEditor(NetworkParams params, QWidget *parent) :
   
   ui->cbProtocol->clear();
   ui->cbProtocol->addItem("UDP", QAbstractSocket::UdpSocket);
-  
+  ui->cbProtocol->addItem("TCP", QAbstractSocket::TcpSocket);
   
   ui->cbInterface->setCurrentIndex(ui->cbInterface->findData(params.ifc));
   ui->cbProtocol->setCurrentIndex(ui->cbProtocol->findData(params.protocol));
