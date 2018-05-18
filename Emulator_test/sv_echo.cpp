@@ -30,7 +30,6 @@ ech::SvECHOAbstract::~SvECHOAbstract()
 
 bool ech::SvECHOAbstract::open()
 {
-  connect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
   _isOpened = true;
   return _isOpened;
 }
@@ -38,13 +37,12 @@ bool ech::SvECHOAbstract::open()
 void ech::SvECHOAbstract::close()
 { 
   stop();
-  disconnect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
+  
   _isOpened = false;
 }
 
 bool ech::SvECHOAbstract::start(quint32 msecs)
 {
-  Q_UNUSED(msecs);
   
   if(!_isOpened)
     return false;
@@ -63,6 +61,7 @@ bool ech::SvECHOAbstract::start(quint32 msecs)
   else {
     
     _tcp = new svtcp::SvTcpServer(_log, svtcp::DoNotLog, svtcp::DoNotLog);
+    qDebug() << "start tcp";
     if(!_tcp->startServer(_params.port)) {
       
       _log << svlog::Critical << svlog::Time << QString("Ошибка при запуске сервера TCP: %1").arg(_tcp->lastError()) << svlog::endl;
@@ -72,6 +71,8 @@ bool ech::SvECHOAbstract::start(quint32 msecs)
       return false;
       
     }
+    
+    connect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
     
   }
   
@@ -84,6 +85,8 @@ bool ech::SvECHOAbstract::start(quint32 msecs)
 
 void ech::SvECHOAbstract::stop()
 {
+  disconnect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
+  
   if(_udp) delete _udp;
   _udp = nullptr;
   
@@ -109,6 +112,7 @@ void ech::SvECHOAbstract::write(const QByteArray &packet)
     }
     else if(_tcp) {
       
+      qDebug() << "write tcp";    
       _tcp->sendToAll(packet);
       
     }
@@ -172,6 +176,9 @@ void ech::SvECHOMulti::setBeamCount(int count)
 
 void ech::SvECHOMulti::passed1m(const geo::GEOPOSITION& geopos)
 {
+  if(!_isOpened) 
+    return;
+  
   if(_clearance_counter < _clearance) {
     _clearance_counter++; 
     return;
@@ -230,6 +237,9 @@ void ech::SvECHOFish::setFishCount(int count)
 
 void ech::SvECHOFish::passed1m(const geo::GEOPOSITION& geopos)
 {
+  if(!_isOpened) 
+    return;
+  
   if(_clearance_counter < _clearance) {
     
     _beam->fish = 0;

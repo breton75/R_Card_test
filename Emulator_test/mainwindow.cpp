@@ -238,6 +238,7 @@ void MainWindow::on_bnStart_clicked()
         
         /// сохраняем параметры устройств
         save_devices_params();
+        
         /** открываем порты устройств **/
         /// LAG
         if(ui->checkLAGEnabled->isChecked()) {
@@ -271,7 +272,7 @@ void MainWindow::on_bnStart_clicked()
          
           _self_multi_echo->setNetworkParams(_echo_multi_network_params);
           _self_multi_echo->setBeamCount(ui->spinECHOMultiBeamCount->value());
-
+          
           if(!_self_multi_echo->open()) _exception.raise(QString("Многолуч. эхолот: %1").arg(_self_multi_echo->lastError()));
           
         }
@@ -282,7 +283,7 @@ void MainWindow::on_bnStart_clicked()
           _self_fish_echo->setNetworkParams(_echo_fish_network_params);
           _self_fish_echo->setFishCount(ui->spinECHOFishFishCount->value());
 
-          if(!_self_multi_echo->open()) _exception.raise(QString("Рыбопром. эхолот: %1").arg(_self_fish_echo->lastError()));
+          if(!_self_fish_echo->open()) _exception.raise(QString("Рыбопром. эхолот: %1").arg(_self_fish_echo->lastError()));
           
         }
         
@@ -314,6 +315,7 @@ void MainWindow::on_bnStart_clicked()
       emit startNAVTEXEmulation(ui->spinNAVTEXUploadInterval->value());
       
       emit startECHOMultiEmulation(ui->spinECHOMultiUploadClearance->value());
+      
       emit startECHOFishEmulation(ui->spinECHOFishUploadClearance->value());
       
       stateChanged(sRunned);
@@ -326,6 +328,7 @@ void MainWindow::on_bnStart_clicked()
       stateChanged(sStopping);
       
       emit stopECHOMultiEmulation();
+      
       emit stopECHOFishEmulation();
       
       emit stopNAVTEXEmulation();
@@ -424,6 +427,7 @@ bool MainWindow::read_devices_params()
           ui->editLAGSerialInterface->setText(_lag_serial_params.description);
           
           ui->checkLAGEnabled->setChecked(q->value("is_active").toBool());
+          
           ui->spinLAGUploadInterval->setValue(q->value("upload_interval").toUInt());
           
           ui->spinLAGAlarmId->setValue(q->value("alarm_id").toUInt());
@@ -458,7 +462,7 @@ bool MainWindow::read_devices_params()
           ui->dspinAISRadius->setValue(args.canConvert<qreal>() ? args.toReal() : 50);
           ui->dspinAISRadius->setSuffix(CMU.DistanceDesign);
           
-          
+          break;
         }
           
         case idev::sdtNavtex: {
@@ -483,6 +487,7 @@ bool MainWindow::read_devices_params()
           int indx = ui->cbNAVTEXReceiveFrequency->findData(args.canConvert<quint32>() ? args.toUInt() : 1);
           ui->cbNAVTEXReceiveFrequency->setCurrentIndex(indx < ui->cbNAVTEXReceiveFrequency->count() ? indx : 1);
           
+          break;
         }
           
         case idev::sdtEchoMulti: {
@@ -491,17 +496,19 @@ bool MainWindow::read_devices_params()
           
           _echo_multi_network_params.ifc = q->value("network_interface").toUInt();
           _echo_multi_network_params.protocol = q->value("network_protocol").toUInt();
+          
           _echo_multi_network_params.ip = q->value("network_ip").toUInt();
           _echo_multi_network_params.port = q->value("network_port").toUInt();
           _echo_multi_network_params.description = q->value("description").toString();
-          ui->editECHOMultiInterface->setText(_echo_multi_network_params.description);
           
+          ui->editECHOMultiInterface->setText(_echo_multi_network_params.description);
           ui->checkECHOMultiEnabled->setChecked(q->value("is_active").toBool());
           ui->spinECHOMultiUploadClearance->setValue(q->value("upload_interval").toUInt());
           
           args = parse_args(q->value("args").toString(), ARG_ECHO_BEAM_COUNT);
           ui->spinECHOMultiBeamCount->setValue(args.canConvert<uint>() ? args.toUInt() : 28);
-    
+          
+          break;
         }
           
         case idev::sdtEchoFish: {
@@ -510,19 +517,23 @@ bool MainWindow::read_devices_params()
           
           _echo_fish_network_params.ifc = q->value("network_interface").toUInt();
           _echo_fish_network_params.protocol = q->value("network_protocol").toUInt();
+          
           _echo_fish_network_params.ip = q->value("network_ip").toUInt();
           _echo_fish_network_params.port = q->value("network_port").toUInt();
           _echo_fish_network_params.description = q->value("description").toString();
+
           ui->editECHOFishInterface->setText(_echo_fish_network_params.description);
-          
           ui->checkECHOFishEnabled->setChecked(q->value("is_active").toBool());
           ui->spinECHOFishUploadClearance->setValue(q->value("upload_interval").toUInt());
           
           args = parse_args(q->value("args").toString(), ARG_ECHO_FISH_COUNT);
-          ui->spinECHOFishFishCount->setValue(args.canConvert<uint>() ? args.toUInt() : 9);
+          ui->spinECHOFishFishCount->setValue(args.canConvert<uint>() ? args.toUInt() : 5);
     
+          break;
         }
-          
+        
+        default:
+          break;
       }
       
     }
@@ -685,8 +696,8 @@ QVariant MainWindow::parse_args(QString args, QString arg)
   parser.addOption(QCommandLineOption(ARG_AIS_RECEIVERANGE, "Дальность приема для AIS в км", "50", "50"));
   parser.addOption(QCommandLineOption(ARG_NAV_RECV_FREQ, "Частота приемника NAVTEX", "1", "1"));
   parser.addOption(QCommandLineOption(ARG_ECHO_BEAM_COUNT, "Кол-во излучателей для эхолота", "10", "10"));
-  parser.addOption(QCommandLineOption(ARG_ECHO_FISH_COUNT, "Кол-во рыбы для эхолота", "10", "10"));
-   
+  parser.addOption(QCommandLineOption(ARG_ECHO_FISH_COUNT, "Кол-во рыбы для эхолота", "5", "5"));
+  
   QVariant result = QVariant();
   if (parser.parse(arg_list)) {
     

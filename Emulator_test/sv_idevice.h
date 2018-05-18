@@ -64,7 +64,7 @@ protected:
   quint32 _id;
   idev::SvSimulatedDeviceTypes _type;
   
-  bool _isOpened;
+  bool _isOpened = false;
   QString _last_error;
   
   bool _isActive = true;
