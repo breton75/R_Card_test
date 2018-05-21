@@ -109,7 +109,9 @@ bool MainWindow::init()
   ui->customplot->setBackground(QBrush(QColor("whitesmoke"))); // plotGradient);
   ui->customplot->yAxis->setVisible(false); // addAxes(QCPAxis::atRight);
   ui->customplot->yAxis2->setVisible(true);
-
+  ui->customplot->xAxis->setLabel("Пройденный путь, метры");
+  ui->customplot->yAxis2->setLabel("Глубина, метры");
+  
   _curve = new QCPGraph(ui->customplot->xAxis, ui->customplot->yAxis2);
   _curve->setAntialiased(true);
   _curve->setPen(QPen(QBrush(QColor("black")), 2));
@@ -1516,6 +1518,8 @@ void MainWindow::on_bnAISAlarmSend_clicked()
 
 void MainWindow::on_cbLAGMessageType_currentIndexChanged(int index)
 {
+  Q_UNUSED(index);
+  
   // здесь какая то хрень творится. если сигнал переделать на выхов функции, то начинает вываливаться
   emit new_lag_message_type(lag::MessageType(ui->cbLAGMessageType->currentData().toInt()));
 }
@@ -1539,20 +1543,14 @@ void MainWindow::stateChanged(States state)
       ui->gbAISParams->setEnabled(false);
       ui->gbLAGParams->setEnabled(false);
       ui->gbNAVTEXParams->setEnabled(false);
-      ui->gbECHOParams->setEnabled(false);
+      ui->gbECHOMultiParams->setEnabled(false);
+      ui->gbECHOFishParams->setEnabled(false);
       
-//      ui->dspinAISRadius->setEnabled(false);
       ui->bnAddVessel->setEnabled(false);
       ui->bnEditVessel->setEnabled(false);
       ui->bnRemoveVessel->setEnabled(false);
       ui->bnSetActive->setEnabled(false);
       ui->bnDropDynamicData->setEnabled(false);
-      
-//      ui->spinLAGUploadInterval->setEnabled(false);
-//      ui->cbLAGMessageType->setEnabled(false);
-      
-//      ui->spinNAVTEXUploadInterval->setEnabled(false);
-//      ui->cbNAVTEXReceiveFrequency->setEnabled(false);
       
       ui->bnStart->setEnabled(true);
       
@@ -1577,20 +1575,14 @@ void MainWindow::stateChanged(States state)
       ui->gbAISParams->setEnabled(true);
       ui->gbLAGParams->setEnabled(true);
       ui->gbNAVTEXParams->setEnabled(true);
-      ui->gbECHOParams->setEnabled(true);
+      ui->gbECHOMultiParams->setEnabled(true);
+      ui->gbECHOFishParams->setEnabled(true);
       
-//      ui->dspinAISRadius->setEnabled(true);
       ui->bnAddVessel->setEnabled(true);
       ui->bnEditVessel->setEnabled(true);
       ui->bnRemoveVessel->setEnabled(true);
       ui->bnSetActive->setEnabled(true);
       ui->bnDropDynamicData->setEnabled(true);
-      
-//      ui->spinLAGUploadInterval->setEnabled(true);
-//      ui->cbLAGMessageType->setEnabled(true);
-      
-//      ui->spinNAVTEXUploadInterval->setEnabled(true);
-//      ui->cbNAVTEXReceiveFrequency->setEnabled(true);
       
       ui->bnStart->setEnabled(true);
       ui->bnStart->setIcon(QIcon(":/icons/Icons/start.ico"));

@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Emulator_test
 TEMPLATE = app
 
-VERSION = 0.9.1    # major.minor.patch
+VERSION = 0.9.2    # major.minor.patch
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 # The following define makes your compiler emit warnings if you use
@@ -48,7 +48,8 @@ SOURCES += \
     sv_lag.cpp \
     sv_navtex.cpp \
     ../../svlib/sv_tcpserverclient.cpp \
-    ../../svlib/sv_secondmeter.cpp
+    ../../svlib/sv_secondmeter.cpp \
+    sv_navstateditor.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -74,14 +75,16 @@ HEADERS += \
     sv_lag.h \
     sv_navtex.h \
     ../../svlib/sv_tcpserverclient.h \
-    ../../svlib/sv_secondmeter.h
+    ../../svlib/sv_secondmeter.h \
+    sv_navstateditor.h
 
 FORMS += \
         mainwindow.ui \
     sv_networkeditor.ui \
     sv_serialeditor.ui \
     sv_vesseleditor.ui \
-    sv_navtexeditor.ui
+    sv_navtexeditor.ui \
+    sv_navstateditor.ui
 
 RESOURCES += \
     res.qrc

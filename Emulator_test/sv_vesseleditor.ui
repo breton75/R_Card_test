@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabVesselInfo">
       <attribute name="title">
@@ -1438,7 +1438,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Менять курс через</string>
+               <string>Менять через</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1558,7 +1558,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Менять скорость через</string>
+               <string>Менять через</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

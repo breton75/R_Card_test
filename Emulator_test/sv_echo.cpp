@@ -61,7 +61,7 @@ bool ech::SvECHOAbstract::start(quint32 msecs)
   else {
     
     _tcp = new svtcp::SvTcpServer(_log, svtcp::DoNotLog, svtcp::DoNotLog);
-    qDebug() << "start tcp";
+    qDebug() << "start tcp:" << _params.description;
     if(!_tcp->startServer(_params.port)) {
       
       _log << svlog::Critical << svlog::Time << QString("Ошибка при запуске сервера TCP: %1").arg(_tcp->lastError()) << svlog::endl;
@@ -111,13 +111,10 @@ void ech::SvECHOAbstract::write(const QByteArray &packet)
       
     }
     else if(_tcp) {
-      
-      qDebug() << "write tcp";    
+
       _tcp->sendToAll(packet);
       
     }
-   
-//    _log << svlog::Attention << svlog::Time << QString("written: %1 bytes").arg(message.length()) << svlog::endl;
     
   }
 }

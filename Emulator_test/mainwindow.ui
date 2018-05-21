@@ -99,7 +99,7 @@
           </font>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="tabAIS">
           <attribute name="title">
@@ -128,8 +128,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>367</width>
-                <height>441</height>
+                <width>292</width>
+                <height>317</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1785,8 +1785,8 @@ color: rgb(0, 0, 127);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>221</width>
-                <height>196</height>
+                <width>367</width>
+                <height>441</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1819,7 +1819,7 @@ color: rgb(0, 0, 127);</string>
                 </widget>
                </item>
                <item>
-                <widget class="QGroupBox" name="gbInterfaceECHO">
+                <widget class="QGroupBox" name="gbInterfaceECHOMulti">
                  <property name="font">
                   <font>
                    <weight>75</weight>
@@ -1877,7 +1877,7 @@ color: rgb(0, 0, 127);</string>
                 </widget>
                </item>
                <item>
-                <widget class="QGroupBox" name="gbECHOParams">
+                <widget class="QGroupBox" name="gbECHOMultiParams">
                  <property name="font">
                   <font>
                    <weight>75</weight>
@@ -2071,7 +2071,7 @@ color: rgb(0, 0, 127);</string>
                 </widget>
                </item>
                <item>
-                <widget class="QGroupBox" name="gbInterfaceECHO_2">
+                <widget class="QGroupBox" name="gbInterfaceECHOFish">
                  <property name="font">
                   <font>
                    <weight>75</weight>
@@ -2129,7 +2129,7 @@ color: rgb(0, 0, 127);</string>
                 </widget>
                </item>
                <item>
-                <widget class="QGroupBox" name="gbECHOParams_2">
+                <widget class="QGroupBox" name="gbECHOFishParams">
                  <property name="font">
                   <font>
                    <weight>75</weight>
