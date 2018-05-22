@@ -3,8 +3,8 @@
 
 //geo::Units cur_unit = geo::uKnotsMiles;
 
-QMap<geo::Units, geo::UnitsInfo> units_info = {{geo::uKnotsMiles, geo::UnitsInfo(geo::uKnotsMiles, " миль", " узлов", 1.0, 1000)},
-                                               {geo::uKmhKm, geo::UnitsInfo(geo::uKmhKm, " км.", " км/ч", 1.852, 1852)}};
+QMap<geo::Units, geo::UnitsInfo> units_info = {{geo::uKnotsMiles, geo::UnitsInfo(geo::uKnotsMiles, " миль", " узлов", 1.0, 1852)},
+                                               {geo::uKmhKm, geo::UnitsInfo(geo::uKmhKm, " км.", " км/ч", 1.852, 1000)}};
 
 geo::UnitsInfo CMU = units_info.value(geo::uKnotsMiles);
 

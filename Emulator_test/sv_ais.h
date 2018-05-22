@@ -85,6 +85,14 @@ namespace ais {
 //  };
   
   struct aisNavStat {
+    aisNavStat() {  }
+    aisNavStat(int ITU_id, QString name, quint32 static_voyage_interval)
+    {
+      this->ITU_id = ITU_id;
+      this->name = name;
+      this->static_voyage_interval = static_voyage_interval;
+    }
+    
     int ITU_id;
     QString name;
     quint32 static_voyage_interval;
@@ -159,7 +167,7 @@ public:
   void setSerialPortParams(const SerialPortParams& params);
 
   qreal receiveRange() { return _receive_range; }
-  void setReceiveRange(qreal range) { _receive_range = range; }
+  void setReceiveRange(qreal rangeInMeters) { _receive_range = rangeInMeters; }
   
   qreal distanceTo(ais::SvAIS* remoteAIS); /*{ if(!remoteAIS) return 0.0; 
     else {

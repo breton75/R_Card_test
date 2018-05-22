@@ -99,7 +99,7 @@
           </font>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="tabAIS">
           <attribute name="title">
@@ -121,15 +121,15 @@
            <item>
             <widget class="QToolBox" name="toolBoxAIS">
              <property name="currentIndex">
-              <number>1</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="page">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>292</width>
-                <height>317</height>
+                <width>367</width>
+                <height>441</height>
                </rect>
               </property>
               <attribute name="label">
@@ -154,7 +154,7 @@
                   <string notr="true">color: rgb(85, 85, 255);</string>
                  </property>
                  <property name="text">
-                  <string>Устройство включено</string>
+                  <string>Выгружать данные</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -765,7 +765,7 @@ color: rgb(0, 0, 127);</string>
                   <string notr="true">color: rgb(85, 85, 255);</string>
                  </property>
                  <property name="text">
-                  <string>Устройство включено</string>
+                  <string>Выгружать данные</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -1227,7 +1227,7 @@ color: rgb(0, 0, 127);</string>
                   <string notr="true">color: rgb(85, 85, 255);</string>
                  </property>
                  <property name="text">
-                  <string>Устройство включено</string>
+                  <string>Выгружать данные</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -1778,7 +1778,7 @@ color: rgb(0, 0, 127);</string>
            <item>
             <widget class="QToolBox" name="toolBoxECHO">
              <property name="currentIndex">
-              <number>1</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="pageECHOMulti">
               <property name="geometry">
@@ -1811,7 +1811,7 @@ color: rgb(0, 0, 127);</string>
                   <string notr="true">color: rgb(85, 85, 255);</string>
                  </property>
                  <property name="text">
-                  <string>Устройство включено</string>
+                  <string>Выгружать данные</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -2063,7 +2063,7 @@ color: rgb(0, 0, 127);</string>
                   <string notr="true">color: rgb(85, 85, 255);</string>
                  </property>
                  <property name="text">
-                  <string>Устройство включено</string>
+                  <string>Выгружать данные</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>

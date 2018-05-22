@@ -243,51 +243,43 @@ void MainWindow::on_bnStart_clicked()
         
         /** открываем порты устройств **/
         /// LAG
-        if(ui->checkLAGEnabled->isChecked()) {
-          
-          _self_lag->setSerialPortParams(_lag_serial_params);
-          _self_lag->setMessageType(lag::MessageType(ui->cbLAGMessageType->currentData().toInt()));
+        _self_lag->setSerialPortParams(_lag_serial_params);
+        _self_lag->setMessageType(lag::MessageType(ui->cbLAGMessageType->currentData().toInt()));
+        
+        if(ui->checkLAGEnabled->isChecked()) 
           if(!_self_lag->open()) _exception.raise(QString("ЛАГ: %1").arg(_self_lag->lastError()));
-        }
+
         
         /// AIS
-        if(ui->checkAISEnabled->isChecked()) {
-         
-          _self_ais->setSerialPortParams(_ais_serial_params);
-          _self_ais->setReceiveRange(ui->dspinAISRadius->value());
+        _self_ais->setSerialPortParams(_ais_serial_params);
+        _self_ais->setReceiveRange(ui->dspinAISRadius->value());
+        
+        if(ui->checkAISEnabled->isChecked())
           if(!_self_ais->open()) _exception.raise(QString("АИС: %1").arg(_self_ais->lastError()));
-          
-        }
+        
         
         /// NAVTEX
-        if(ui->checkNAVTEXEnabled->isChecked()) {
-         
-          _navtex->setSerialPortParams(_navtex_serial_params);
-          _navtex->setReceiveFrequency(ui->cbNAVTEXReceiveFrequency->currentData().toUInt());
-
+        _navtex->setSerialPortParams(_navtex_serial_params);
+        _navtex->setReceiveFrequency(ui->cbNAVTEXReceiveFrequency->currentData().toUInt());
+        
+        if(ui->checkNAVTEXEnabled->isChecked()) 
           if(!_navtex->open()) _exception.raise(QString("НАВТЕКС: %1").arg(_navtex->lastError()));
-          
-        }
+
         
         /// ECHO MULTI
-        if(ui->checkECHOMultiEnabled->isChecked()) {
-         
-          _self_multi_echo->setNetworkParams(_echo_multi_network_params);
-          _self_multi_echo->setBeamCount(ui->spinECHOMultiBeamCount->value());
-          
+        _self_multi_echo->setNetworkParams(_echo_multi_network_params);
+        _self_multi_echo->setBeamCount(ui->spinECHOMultiBeamCount->value());
+        
+        if(ui->checkECHOMultiEnabled->isChecked()) 
           if(!_self_multi_echo->open()) _exception.raise(QString("Многолуч. эхолот: %1").arg(_self_multi_echo->lastError()));
           
-        }
         
         /// ECHO FISH
-        if(ui->checkECHOFishEnabled->isChecked()) {
-         
-          _self_fish_echo->setNetworkParams(_echo_fish_network_params);
-          _self_fish_echo->setFishCount(ui->spinECHOFishFishCount->value());
-
+        _self_fish_echo->setNetworkParams(_echo_fish_network_params);
+        _self_fish_echo->setFishCount(ui->spinECHOFishFishCount->value());
+        
+        if(ui->checkECHOFishEnabled->isChecked()) 
           if(!_self_fish_echo->open()) _exception.raise(QString("Рыбопром. эхолот: %1").arg(_self_fish_echo->lastError()));
-          
-        }
         
       }
       
@@ -1197,7 +1189,7 @@ void MainWindow::on_updateVesselById(int id)
       
       ((SvMapObjectOtherVessel*)(vessel->mapObject()))->setOutdated(true);
   
-      LISTITEMs->value(id)->setIcon(QIcon(":/icons/Icons/link-broken1.ico"));
+      LISTITEMs->value(id)->setIcon(QIcon(":/icons/Icons/link-broken2.ico"));
       LISTITEMs->value(id)->setFont(_font_nolink);
       LISTITEMs->value(id)->setTextColor(QColor(OUTDATED_VESSEL_COLOR));
       
@@ -1212,7 +1204,6 @@ void MainWindow::on_updateVesselById(int id)
       
       vessel->updateVessel();
     }  
-    
     
   }
 }
@@ -1260,9 +1251,9 @@ gps::gpsInitParams MainWindow::readGPSInitParams(QSqlQuery* q, ais::aisDynamicDa
   result.init_random_course = q->value("init_random_course").toBool();
   result.init_random_speed = q->value("init_random_speed").toBool();
   result.course_change_ratio = q->value("init_course_change_ratio").toUInt();
-  result.course_change_segment = q->value("init_course_change_segment").toUInt();
+  result.course_change_segment = q->value("init_course_change_segment").toReal();
   result.speed_change_ratio = q->value("init_speed_change_ratio").toUInt();
-  result.speed_change_segment = q->value("init_speed_change_segment").toUInt();
+  result.speed_change_segment = q->value("init_speed_change_segment").toReal();
   
   // начальные координаты
   if(result.init_random_coordinates || 

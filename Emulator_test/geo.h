@@ -65,7 +65,7 @@ namespace geo {
     quint8 accuracy = 1;
     quint8 rate_of_turn = 0;
     qreal drift = 0.0;
-    qreal pitch = 0.0;   // тангаж в радианах
+    qreal pitch = 0.0;    // тангаж в радианах
     qreal roll = 0.0;     // крен в радианах
     
     qreal full_distance = 0.0;

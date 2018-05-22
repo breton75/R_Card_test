@@ -5,7 +5,7 @@ extern geo::UnitsInfo CMU;
 
 SvMapObject::SvMapObject(QWidget* parent)
 {
-  setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemClipsToShape);
+  setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemClipsToShape /*| QGraphicsItem::ItemIsMovable*/);
   setAcceptHoverEvents(true);
   
   _path = new QPainterPath();

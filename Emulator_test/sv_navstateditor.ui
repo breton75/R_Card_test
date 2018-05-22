@@ -61,7 +61,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="cbInitCoordinates">
+         <widget class="QComboBox" name="cbNavStatus">
           <property name="font">
            <font>
             <weight>50</weight>
@@ -109,7 +109,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="spinBox">
+         <widget class="QSpinBox" name="spinCourse">
           <property name="suffix">
            <string>°</string>
           </property>
@@ -151,7 +151,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="doubleSpinBox">
+         <widget class="QDoubleSpinBox" name="dspinSpeed">
           <property name="suffix">
            <string> узлов</string>
           </property>
@@ -199,7 +199,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+         <widget class="QDoubleSpinBox" name="dspinDrift">
           <property name="enabled">
            <bool>false</bool>
           </property>

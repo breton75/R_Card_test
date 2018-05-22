@@ -951,11 +951,11 @@ void area::SvAreaView::drawBackground(QPainter *painter, const QRectF &r)
   pathHeader.addText(x1, y2, font, QString("Широта: %2 - %3 (%4%5). Долгота: %6 - %7 (%8%9)")
                                              .arg(_area_data->geo_bounds.min_lat, 0, 'f', 4)
                                              .arg(_area_data->geo_bounds.max_lat, 0, 'f', 4)
-                                             .arg(_area_data->lon2lon_distance / CMU.MetersCount, 0, 'f', 2)
+                                             .arg(_area_data->lat2lat_distance / CMU.MetersCount, 0, 'f', 2)
                                              .arg(CMU.DistanceDesign)
                                              .arg(_area_data->geo_bounds.min_lon, 0, 'f', 4)
                                              .arg(_area_data->geo_bounds.max_lon, 0, 'f', 4)
-                                             .arg(_area_data->lat2lat_distance / CMU.MetersCount, 0, 'f', 2)
+                                             .arg(_area_data->lon2lon_distance / CMU.MetersCount, 0, 'f', 2)
                                              .arg(CMU.DistanceDesign));
 
   

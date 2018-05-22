@@ -118,10 +118,11 @@ void gps::SvGPSEmitter::run()
       emit_timer = QTime::currentTime().msecsSinceStartOfDay();
     }
     
+    qDebug() << speed_segment_counter << _gps_params.speed_change_segment << course_segment_counter << _gps_params.course_change_segment;
     
     /** вычисляем новый курс **/
-    if(_gps_params.course_change_ratio && 
-       _gps_params.course_change_segment && 
+    if((_gps_params.course_change_ratio != 0) && 
+       (_gps_params.course_change_segment != 0) && 
        (course_segment_counter > _gps_params.course_change_segment * CMU.MetersCount)) {
       
       qsrand(QTime::currentTime().msecsSinceStartOfDay());
@@ -137,15 +138,17 @@ void gps::SvGPSEmitter::run()
     course_segment_counter += _one_tick_length;
     
     /** вычисляем новую скорость **/
-    if(_gps_params.speed_change_ratio && 
-       _gps_params.speed_change_segment && 
+    if((_gps_params.speed_change_ratio != 0) && 
+       (_gps_params.speed_change_segment != 0) && 
        (speed_segment_counter > _gps_params.speed_change_segment * CMU.MetersCount)) {
       
       qsrand(QTime::currentTime().msecsSinceStartOfDay());
-      int a = qrand() % _gps_params.speed_change_ratio;
+      int a = _current_geo_position.speed * (qreal(qrand() % _gps_params.speed_change_ratio) / 100.0);
       int b = -1 + (2 * (qrand() % 2));
       
-      _current_geo_position.speed = _current_geo_position.speed + a * b;
+      _current_geo_position.speed += a * b;
+      
+      speed_segment_counter = -_one_tick_length;
       
     }
     speed_segment_counter += _one_tick_length;
@@ -168,14 +171,9 @@ void gps::SvGPSEmitter::run()
       }
       else {
         pass1m_segment_counter += _one_tick_length;
-//        qDebug() << "not pass" << pass1m_segment_counter;
       }
-//    }
     
     _current_geo_position = new_geopos;
-    
-    
-//    qDebug() << "llat llon:" << _current_geo_position.latitude << _current_geo_position.longtitude;
     
   }
   

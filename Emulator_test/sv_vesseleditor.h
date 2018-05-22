@@ -61,9 +61,9 @@ public:
   bool    t_init_random_course = false;
   bool    t_init_random_speed = false;
   quint32 t_init_course_change_ratio = 45;
-  quint32 t_init_course_change_segment = 10;
+  qreal   t_init_course_change_segment = 10;
   quint32 t_init_speed_change_ratio = 10;
-  quint32 t_init_speed_change_segment = 10;
+  qreal   t_init_speed_change_segment = 4;
   
   
 public slots:

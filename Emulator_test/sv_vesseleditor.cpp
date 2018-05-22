@@ -61,9 +61,9 @@ SvVesselEditor::SvVesselEditor(QWidget *parent, int vesselId, bool self) :
       t_init_random_course = q->value("init_random_course").toBool();
       t_init_random_speed = q->value("init_random_speed").toBool();
       t_init_course_change_ratio = q->value("init_course_change_ratio").toUInt();
-      t_init_course_change_segment = q->value("init_course_change_segment").toUInt();
+      t_init_course_change_segment = q->value("init_course_change_segment").toReal();
       t_init_speed_change_ratio = q->value("init_speed_change_ratio").toUInt();
-      t_init_speed_change_segment = q->value("init_speed_change_segment").toUInt();
+      t_init_speed_change_segment = q->value("init_speed_change_segment").toReal();
       
     }
     
@@ -105,11 +105,11 @@ SvVesselEditor::SvVesselEditor(QWidget *parent, int vesselId, bool self) :
   ui->cbInitCourse->setCurrentIndex(ui->cbInitCourse->findData(t_init_random_course));
   ui->cbInitSpeed->setCurrentIndex(ui->cbInitSpeed->findData(t_init_random_speed));
   
-  ui->dspinCourseChangeSegment->setValue(t_init_course_change_ratio / CMU.ConvertKoeff);
+  ui->dspinCourseChangeSegment->setValue(t_init_course_change_ratio);
   ui->dspinCourseChangeSegment->setSuffix(QString(" %1").arg(CMU.DistanceDesign));
   ui->spinCourseChangeRatio->setValue(t_init_course_change_segment);
   ui->spinSpeedChangeRatio->setValue(t_init_speed_change_ratio);
-  ui->dspinSpeedChangeSegment->setValue(t_init_speed_change_segment / CMU.ConvertKoeff);
+  ui->dspinSpeedChangeSegment->setValue(t_init_speed_change_segment);
   ui->dspinSpeedChangeSegment->setSuffix(QString(" %1").arg(CMU.DistanceDesign));
   
   connect(ui->bnSave, SIGNAL(clicked()), this, SLOT(accept()));
@@ -218,9 +218,9 @@ void SvVesselEditor::accept()
   t_init_random_speed = ui->cbInitSpeed->currentData().toBool();
   
   t_init_course_change_ratio = ui->spinCourseChangeRatio->value();
-  t_init_course_change_segment = ui->dspinCourseChangeSegment->value() * CMU.ConvertKoeff;
+  t_init_course_change_segment = ui->dspinCourseChangeSegment->value();
   t_init_speed_change_ratio = ui->spinSpeedChangeRatio->value();
-  t_init_speed_change_segment = ui->dspinSpeedChangeSegment->value() * CMU.ConvertKoeff;
+  t_init_speed_change_segment = ui->dspinSpeedChangeSegment->value();
   
   switch (this->showMode) {
     
