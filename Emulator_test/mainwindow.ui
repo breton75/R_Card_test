@@ -99,7 +99,7 @@
           </font>
          </property>
          <property name="currentIndex">
-          <number>3</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tabAIS">
           <attribute name="title">
@@ -121,7 +121,7 @@
            <item>
             <widget class="QToolBox" name="toolBoxAIS">
              <property name="currentIndex">
-              <number>0</number>
+              <number>1</number>
              </property>
              <widget class="QWidget" name="page">
               <property name="geometry">
@@ -136,6 +136,18 @@
                <string>Параметры устройства</string>
               </attribute>
               <layout class="QVBoxLayout" name="verticalLayout_19">
+               <property name="leftMargin">
+                <number>2</number>
+               </property>
+               <property name="topMargin">
+                <number>2</number>
+               </property>
+               <property name="rightMargin">
+                <number>2</number>
+               </property>
+               <property name="bottomMargin">
+                <number>2</number>
+               </property>
                <item>
                 <widget class="QCheckBox" name="checkAISEnabled">
                  <property name="minimumSize">
@@ -543,6 +555,9 @@ color: rgb(0, 0, 127);</string>
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_2">
+                  <property name="spacing">
+                   <number>2</number>
+                  </property>
                   <property name="leftMargin">
                    <number>2</number>
                   </property>
@@ -622,20 +637,14 @@ color: rgb(0, 0, 127);</string>
                    </widget>
                   </item>
                   <item>
-                   <spacer name="horizontalSpacer_3">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                   <widget class="QFrame" name="frame_2">
+                    <property name="frameShape">
+                     <enum>QFrame::VLine</enum>
                     </property>
-                    <property name="sizeType">
-                     <enum>QSizePolicy::Fixed</enum>
+                    <property name="frameShadow">
+                     <enum>QFrame::Raised</enum>
                     </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>10</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
+                   </widget>
                   </item>
                   <item>
                    <widget class="QPushButton" name="bnSetActive">
@@ -661,6 +670,36 @@ color: rgb(0, 0, 127);</string>
                    </widget>
                   </item>
                   <item>
+                   <widget class="QFrame" name="frame_3">
+                    <property name="frameShape">
+                     <enum>QFrame::VLine</enum>
+                    </property>
+                    <property name="frameShadow">
+                     <enum>QFrame::Raised</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="bnVesselNavState">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="res.qrc">
+                      <normaloff>:/icons/Icons/handwheel.ico</normaloff>:/icons/Icons/handwheel.ico</iconset>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
                    <spacer name="horizontalSpacer_2">
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
@@ -675,6 +714,9 @@ color: rgb(0, 0, 127);</string>
                   </item>
                   <item>
                    <widget class="QPushButton" name="bnDropDynamicData">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -686,7 +728,7 @@ color: rgb(0, 0, 127);</string>
                     </property>
                     <property name="icon">
                      <iconset resource="res.qrc">
-                      <normaloff>:/icons/Icons/wave_new.ico</normaloff>:/icons/Icons/wave_new.ico</iconset>
+                      <normaloff>:/icons/Icons/dropgeo.ico</normaloff>:/icons/Icons/dropgeo.ico</iconset>
                     </property>
                     <property name="flat">
                      <bool>true</bool>
@@ -1659,7 +1701,7 @@ color: rgb(0, 0, 127);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>98</width>
+                <width>83</width>
                 <height>111</height>
                </rect>
               </property>
@@ -2618,6 +2660,15 @@ color: rgb(0, 0, 127);</string>
     <string>Старт</string>
    </property>
   </action>
+  <action name="actionNavStat">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/Icons/handwheel.ico</normaloff>:/icons/Icons/handwheel.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Статус навигации</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -2672,6 +2723,22 @@ color: rgb(0, 0, 127);</string>
    <hints>
     <hint type="sourcelabel">
      <x>138</x>
+     <y>131</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bnVesselNavState</sender>
+   <signal>clicked()</signal>
+   <receiver>actionNavStat</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>214</x>
      <y>131</y>
     </hint>
     <hint type="destinationlabel">

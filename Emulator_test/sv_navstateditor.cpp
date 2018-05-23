@@ -4,15 +4,25 @@
 SvNavStatEditor* NAVSTATEDITOR_UI;
 extern SvSQLITE *SQLITE;
 
-SvNavStatEditor::SvNavStatEditor(ais::aisNavStat navstat, qreal speed, qreal course, QWidget *parent) :
+SvNavStatEditor::SvNavStatEditor(int vessel_id, ais::aisNavStat navstat, qreal speed, qreal course, QWidget *parent) :
   QDialog(parent),
   ui(new Ui::SvNavStatEditorDialog)
 {
   ui->setupUi(this);
   
-  t_navstat = navstat;
-  t_speed = speed;
-  t_course = course;
+  loadNavStats();
+  
+  _vessel_id = vessel_id;
+  
+  ui->cbNavStatus->setCurrentIndex(ui->cbNavStatus->findData(navstat.ITU_id));
+  ui->spinCourse->setValue(int(course));
+  ui->dspinSpeed->setValue(speed);
+  
+  connect(ui->bnSave, SIGNAL(clicked()), this, SLOT(accept()));
+  connect(ui->bnCancel, SIGNAL(clicked()), this, SLOT(reject()));
+  
+  this->setModal(true);
+  this->show();
   
 }
 
@@ -46,12 +56,36 @@ void SvNavStatEditor::loadNavStats()
 
 void SvNavStatEditor::accept()
 {
-  t_navstat.ITU_id = ui->cbNavStatus->currentData().toInt();
-  t_navstat.name = ui->cbNavStatus->currentText();
+  _navstat.ITU_id = ui->cbNavStatus->currentData().toInt();
+  _navstat.name = ui->cbNavStatus->currentText();
   
-  t_speed = ui->dspinSpeed->value();
-  t_course = ui->spinCourse->value();
+  _speed = ui->dspinSpeed->value();
+  _course = ui->spinCourse->value();
   
+  try {
+    _exception.raise("SQLITE");
+    if(!SQLITE->transaction()) _exception.raise(SQLITE->db.lastError().databaseText());
+     
+      QSqlError sql = SQLITE->execSQL(QString(SQL_UPDATE_NAVSTAT)
+                            .arg(_course)
+                            .arg(_speed)
+                            .arg(_navstat.ITU_id)
+                            .arg(_vessel_id));
+            
+      if(QSqlError::NoError != sql.type()) _exception.raise(sql.databaseText());
+      
+      if(!SQLITE->commit()) _exception.raise(SQLITE->db.lastError().databaseText());
+      
+  }
+  
+  catch(SvException &e) {
+      
+//    SQLITE->rollback();
+    _last_error = e.err;
+    QDialog::reject();
+    qDebug() << _last_error;
+    return;
+  }
   
   QDialog::accept();
   

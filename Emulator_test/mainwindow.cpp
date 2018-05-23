@@ -6,11 +6,11 @@
 
 extern SvSQLITE *SQLITE;
 extern SvSerialEditor* SERIALEDITOR_UI;
-extern SvNavtexEditor* NAVTEXEDITOR_UI;
 extern SvNetworkEditor* NETWORKEDITOR_UI;
 
 extern SvVesselEditor* VESSELEDITOR_UI;
 extern SvNavtexEditor* NAVTEXEDITOR_UI; 
+extern SvNavStatEditor* NAVSTATEDITOR_UI;
 
 extern geo::UnitsInfo CMU;
 
@@ -1542,6 +1542,7 @@ void MainWindow::stateChanged(States state)
       ui->bnRemoveVessel->setEnabled(false);
       ui->bnSetActive->setEnabled(false);
       ui->bnDropDynamicData->setEnabled(false);
+//      ui->bnVesselNavState->setEnabled(true);
       
       ui->bnStart->setEnabled(true);
       
@@ -1899,6 +1900,8 @@ void MainWindow::on_echoBeamsUpdated(ech::Beam* bl)
 
 void MainWindow::on_cbMeasureUnits_currentIndexChanged(int index)
 {
+  Q_UNUSED(index);
+  
 //  switch (index) {
 //    case 0:
 //      geo::setCurrentMeasureUnit(geo::uKnotsMiles);
@@ -1944,4 +1947,40 @@ void MainWindow::on_bnSetActive_clicked()
 
   on_updateVesselActive(_selected_vessel_id);
   
+}
+
+void MainWindow::on_actionNavStat_triggered()
+{
+  ais::aisNavStat navstat; // = *(VESSELs->value(_selected_vessel_id)->ais()->navStatus());
+  qreal speed = VESSELs->value(_selected_vessel_id)->ais()->dynamicData()->geoposition.speed;
+  qreal course = VESSELs->value(_selected_vessel_id)->ais()->dynamicData()->geoposition.course;
+  
+  NAVSTATEDITOR_UI = new SvNavStatEditor(_selected_vessel_id, navstat, speed, course);
+  
+  if(NAVSTATEDITOR_UI->exec() != QDialog::Accepted) {
+    qDebug() << 0;
+    qDebug() << NAVSTATEDITOR_UI->last_error();
+    if(!NAVSTATEDITOR_UI->last_error().isEmpty())
+      QMessageBox::critical(this, "Ошибка", QString("Ошибка при редактировании записи:\n%1").arg(NAVSTATEDITOR_UI->last_error()), QMessageBox::Ok);
+    
+    delete NAVSTATEDITOR_UI;
+    
+    return;
+  }
+  
+  navstat = NAVSTATEDITOR_UI->navstat();
+  delete NAVSTATEDITOR_UI;
+  
+//  speed = NAVSTATEDITOR_UI->speed();
+//  course = NAVSTATEDITOR_UI->course();
+//  qDebug() << NAVSTATEDITOR_UI;
+//  qDebug() << 2;
+//  VESSELs->value(_selected_vessel_id)->ais()->setNavStatus(navstat);
+//  qDebug() << 3;
+//  VESSELs->value(_selected_vessel_id)->ais()->setCourse(course);
+//  VESSELs->value(_selected_vessel_id)->ais()->setSpeed(speed);
+//  qDebug() << 4;
+  
+//  VESSELs->value(_selected_vessel_id)->updateVessel();
+//  qDebug() << 5;
 }

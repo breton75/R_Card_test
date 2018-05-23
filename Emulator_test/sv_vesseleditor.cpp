@@ -227,7 +227,7 @@ void SvVesselEditor::accept()
     case smNew: {
       
       try {
-        
+        _exception.raise("SQLITE->db");
         if(!SQLITE->transaction()) _exception.raise(SQLITE->db.lastError().databaseText());
 
           QSqlError sql = SQLITE->execSQL(QString(SQL_INSERT_NEW_VESSEL).arg(t_self));

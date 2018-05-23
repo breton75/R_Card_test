@@ -3,15 +3,12 @@
 
 #include <QDialog>
 #include <QDateTime>
-#include <QMessageBox>
-#include <QException>
+
+#include "geo.h"
+#include "sql_defs.h"
 
 #include "../../svlib/sv_sqlite.h"
-#include "sql_defs.h"
-#include "sv_exception.h"
-#include "geo.h"
-
-//#define SQL_SELECT_BEACON "select plan.id, plan.uid, plan.lon, plan.lat, plan.date_time, plan.description from plan where id=%1"
+#include "../../svlib/sv_exception.h"
 
 namespace Ui {
 class SvVesselEditorDialog;

@@ -130,7 +130,10 @@
                        "               voyage_team = %18  " CR \
                        "WHERE vessel_id = %19 "
 
-
+#define SQL_UPDATE_NAVSTAT "UPDATE ais SET dynamic_course = %1, " CR \
+                           "               dynamic_speed = %2, " CR \
+                           "               nav_status_ITU_id = %3 " CR \
+                           "WHERE vessel_id = %4 "
 
 #define SQL_UPDATE_GPS "UPDATE gps SET timeout = %1," CR \
                        "               init_random_coordinates = '%2'," CR \

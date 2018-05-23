@@ -118,8 +118,6 @@ void gps::SvGPSEmitter::run()
       emit_timer = QTime::currentTime().msecsSinceStartOfDay();
     }
     
-    qDebug() << speed_segment_counter << _gps_params.speed_change_segment << course_segment_counter << _gps_params.course_change_segment;
-    
     /** вычисляем новый курс **/
     if((_gps_params.course_change_ratio != 0) && 
        (_gps_params.course_change_segment != 0) && 

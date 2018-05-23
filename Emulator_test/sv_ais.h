@@ -121,6 +121,9 @@ public:
   void setStaticVoyageData(const ais::aisStaticVoyageData& svdata) { _static_voyage_data = svdata; }
   void setDynamicData(const ais::aisDynamicData& ddata) { _dynamic_data = ddata; }
   
+  void setSpeed(const qreal speed) { _dynamic_data.geoposition.speed = speed; }
+  void setCourse(const qreal course) { _dynamic_data.geoposition.course = course; }
+  
   void setGeoPosition(const geo::GEOPOSITION& geopos) { _dynamic_data.geoposition = geopos; }
   
   ais::aisNavStat* navStatus() { return &_nav_status; }

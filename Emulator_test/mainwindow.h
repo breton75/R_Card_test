@@ -22,6 +22,7 @@
 #include "sv_navtexeditor.h"
 #include "sv_serialeditor.h"
 #include "sv_networkeditor.h"
+#include "sv_navstateditor.h"
 
 
 
@@ -156,6 +157,8 @@ private slots:
     void on_cbMeasureUnits_currentIndexChanged(int index);
     
     void on_bnSetActive_clicked();
+    
+    void on_actionNavStat_triggered();
     
 signals:
   void newState(States state);

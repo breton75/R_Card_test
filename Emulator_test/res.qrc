@@ -28,6 +28,8 @@
     <file>Icons/Search.ico</file>
   </qresource>
   <qresource prefix="icons">
+    <file>Icons/dropgeo.ico</file>
+    <file>Icons/handwheel.ico</file>
     <file>Icons/link-broken2.ico</file>
     <file>Icons/vessel_paused.ico</file>
     <file>Icons/vessel_start.ico</file>
