@@ -104,7 +104,7 @@ namespace ech {
   
 }
 
-class ech::SvECHOAbstract : public idev::SvIDevice
+class ech::SvECHOAbstract : public idev::SvINetworkDevice
 {
   Q_OBJECT
   
@@ -115,28 +115,28 @@ public:
   void setVesselId(int id) { _vessel_id = id; }
   int vesselId() { return _vessel_id; }
   
-  void setNetworkParams(NetworkParams params) { _params = params; }
+//  void setNetworkParams(NetworkParams params) { _params = params; }
 
-  bool open();
-  void close();
+//  bool open();
+//  void close();
   
   bool start(quint32 msecs);
-  void stop();
+//  void stop();
   
   friend class ech::SvECHOMulti;
   friend class ech::SvECHOFish;
   
 private:
-  svlog::SvLog _log;
+//  svlog::SvLog _log;
   
   int _vessel_id = -1;
-  NetworkParams _params;
+//  NetworkParams _params;
   
   qreal _koeff_lat = 1.0;
   qreal _koeff_lon = 1.0;
   
-  QUdpSocket *_udp = nullptr;
-  svtcp::SvTcpServer *_tcp = nullptr;
+//  QUdpSocket *_udp = nullptr;
+//  svtcp::SvTcpServer *_tcp = nullptr;
   
   geo::GEOPOSITION _current_geoposition;
   geo::BOUNDS _bounds;
@@ -153,11 +153,11 @@ private:
   
   void calcBeam(Beam *beam);
   
-signals:
-  void newPacket(const QByteArray& packet);
+//signals:
+//  void newPacket(const QByteArray& packet);
   
-private slots:
-  void write(const QByteArray& packet);
+//private slots:
+//  void write(const QByteArray& packet);
   
 //public slots:
 //  void passed1m(const geo::GEOPOSITION& geopos);

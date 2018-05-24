@@ -766,8 +766,9 @@ bool MainWindow::createSelfVessel()
     _self_vessel->mapObject()->setZValue(1);
     
     // подключаем
-    connect(_self_gps, SIGNAL(newGPSData(const geo::GEOPOSITION&)), _self_ais, SLOT(newGPSData(const geo::GEOPOSITION&)));
-    connect(_self_gps, SIGNAL(newGPSData(const geo::GEOPOSITION&)), _self_lag, SLOT(newGPSData(const geo::GEOPOSITION&)));
+    connect(_self_gps, &gps::SvGPS::newGPSData, _self_ais, &ais::SvSelfAIS::newGPSData);
+    connect(_self_gps, &gps::SvGPS::newGPSData, _self_lag, &ais::SvSelfAIS::newGPSData);
+    
     connect(_self_gps, &gps::SvGPS::passed1m, _self_multi_echo, &ech::SvECHOMulti::passed1m);
     connect(_self_gps, &gps::SvGPS::passed1m, _self_fish_echo, &ech::SvECHOFish::passed1m);
     
@@ -1012,6 +1013,7 @@ void MainWindow::on_areaSelectionChanged()
   ui->bnRemoveVessel->setEnabled(b && (_selected_vessel_id != _self_vessel->id));
   ui->bnEditVessel->setEnabled(b);
   ui->bnSetActive->setEnabled(b && (_selected_vessel_id != _self_vessel->id));
+  ui->bnVesselNavState->setEnabled(ui->listVessels->currentRow() > -1);
   
   on_updateVesselActive(_selected_vessel_id);
   
@@ -1951,36 +1953,30 @@ void MainWindow::on_bnSetActive_clicked()
 
 void MainWindow::on_actionNavStat_triggered()
 {
-  ais::aisNavStat navstat; // = *(VESSELs->value(_selected_vessel_id)->ais()->navStatus());
+  ais::aisNavStat navstat = *(VESSELs->value(_selected_vessel_id)->ais()->navStatus());
   qreal speed = VESSELs->value(_selected_vessel_id)->ais()->dynamicData()->geoposition.speed;
   qreal course = VESSELs->value(_selected_vessel_id)->ais()->dynamicData()->geoposition.course;
   
-  NAVSTATEDITOR_UI = new SvNavStatEditor(_selected_vessel_id, navstat, speed, course);
-  
-  if(NAVSTATEDITOR_UI->exec() != QDialog::Accepted) {
-    qDebug() << 0;
-    qDebug() << NAVSTATEDITOR_UI->last_error();
-    if(!NAVSTATEDITOR_UI->last_error().isEmpty())
-      QMessageBox::critical(this, "Ошибка", QString("Ошибка при редактировании записи:\n%1").arg(NAVSTATEDITOR_UI->last_error()), QMessageBox::Ok);
+  NAVSTATEDITOR_UI = new SvNavStatEditor(0, _selected_vessel_id, navstat, speed, course);
+
+  switch (NAVSTATEDITOR_UI->exec()) {
     
-    delete NAVSTATEDITOR_UI;
-    
-    return;
+    case SvNavStatEditor::Error:
+      
+      log << svlog::Time << svlog::Critical 
+          << QString("Ошибка при редактировании записи:\n%1").arg(NAVSTATEDITOR_UI->last_error())
+          << svlog::endl;
+      break;
+      
+    case SvNavStatEditor::Accepted:
+      
+      VESSELs->value(_selected_vessel_id)->ais()->setNavStatus(NAVSTATEDITOR_UI->navstat());
+      VESSELs->value(_selected_vessel_id)->ais()->setCourse(NAVSTATEDITOR_UI->course());
+      VESSELs->value(_selected_vessel_id)->ais()->setSpeed(NAVSTATEDITOR_UI->speed());
+      VESSELs->value(_selected_vessel_id)->updateVessel();
+      
+      break;
   }
   
-  navstat = NAVSTATEDITOR_UI->navstat();
   delete NAVSTATEDITOR_UI;
-  
-//  speed = NAVSTATEDITOR_UI->speed();
-//  course = NAVSTATEDITOR_UI->course();
-//  qDebug() << NAVSTATEDITOR_UI;
-//  qDebug() << 2;
-//  VESSELs->value(_selected_vessel_id)->ais()->setNavStatus(navstat);
-//  qDebug() << 3;
-//  VESSELs->value(_selected_vessel_id)->ais()->setCourse(course);
-//  VESSELs->value(_selected_vessel_id)->ais()->setSpeed(speed);
-//  qDebug() << 4;
-  
-//  VESSELs->value(_selected_vessel_id)->updateVessel();
-//  qDebug() << 5;
 }

@@ -8,7 +8,12 @@
 #include <QDateTime>
 #include <QTextEdit>
 #include <QMetaType>
+#include <QUdpSocket>
 
+#include "../../svlib/sv_tcpserverclient.h"
+#include "../../svlib/sv_log.h"
+
+#include "sv_networkeditor.h"
 
 namespace idev {
 
@@ -25,6 +30,7 @@ namespace idev {
   };
 
   class SvIDevice;
+  class SvINetworkDevice;
 
 }
 
@@ -80,6 +86,106 @@ public slots:
 //signals:
 //  void new_data(const svidev::mdata_t& data);
       
+};
+
+class idev::SvINetworkDevice : public idev::SvIDevice
+{
+  Q_OBJECT
+  
+public:
+  SvINetworkDevice(svlog::SvLog log): SvIDevice() { _log = log; }
+//  ~SvINetworkDevice(); 
+  
+  void setNetworkParams(NetworkParams params) { _params = params; }
+  
+  bool open()
+  {
+    _isOpened = true;
+    return _isOpened;
+  }
+  
+  void close()
+  { 
+    stop();
+    _isOpened = false;
+  }
+  
+  bool start(quint32 msecs)
+  {
+    if(!_isOpened)
+      return false;
+    
+    if(_udp) delete _udp;
+    _udp = nullptr;
+    
+    if(_tcp) delete _tcp;
+    _tcp = nullptr;
+    
+    if(_params.protocol == QAbstractSocket::UdpSocket) {
+    
+      _udp = new QUdpSocket();
+  
+    }
+    else {
+      
+      _tcp = new svtcp::SvTcpServer(_log, svtcp::DoNotLog, svtcp::DoNotLog);
+      
+      if(!_tcp->startServer(_params.port)) {
+        
+        _log << svlog::Critical << svlog::Time << QString("Ошибка при запуске сервера TCP: %1").arg(_tcp->lastError()) << svlog::endl;
+        
+        delete _tcp;
+        
+        return false;
+        
+      }
+    }
+  
+    connect(this, &SvINetworkDevice::newPacket, this, &SvINetworkDevice::write);
+    
+  //  _udp->s MulticastInterface(QNetworkInterface::interfaceFromIndex(_params.ifc));
+  
+    return true;
+  }
+  
+  void stop()
+  {
+    disconnect(this, &SvINetworkDevice::newPacket, this, &SvINetworkDevice::write);
+    
+    if(_udp) delete _udp;
+    _udp = nullptr;
+    
+    if(_tcp) delete _tcp;
+    _tcp = nullptr;
+    
+  }
+  
+private:
+  
+  QUdpSocket *_udp = nullptr;
+  svtcp::SvTcpServer *_tcp = nullptr;
+  
+  svlog::SvLog _log;
+  NetworkParams _params;
+  
+signals:
+  void newPacket(const QByteArray& packet);
+  
+private slots:
+  
+  void write(const QByteArray& packet)
+  {
+    if(!packet.isEmpty()) {
+      
+      if(_udp)
+        _udp->writeDatagram(packet, QHostAddress(_params.ip), _params.port);
+
+      else if(_tcp) 
+        _tcp->sendToAll(packet);
+      
+    }
+  }
+  
 };
 
 #endif // SV_IDEVICE_H

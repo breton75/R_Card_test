@@ -99,7 +99,7 @@ SvVesselEditor::SvVesselEditor(QWidget *parent, int vesselId, bool self) :
   
   ui->spinTeam->setValue(t_voyage_team);
   
-  ui->spinGPSTimeout->setValue(t_gps_timeout);
+//  ui->spinGPSTimeout->setValue(t_gps_timeout);
   
   ui->cbInitCoordinates->setCurrentIndex(ui->cbInitCoordinates->findData(t_init_random_coordinates));
   ui->cbInitCourse->setCurrentIndex(ui->cbInitCourse->findData(t_init_random_course));
@@ -211,7 +211,7 @@ void SvVesselEditor::accept()
   
   t_voyage_team = ui->spinTeam-> value();
   
-  t_gps_timeout = ui->spinGPSTimeout->value();
+//  t_gps_timeout = ui->spinGPSTimeout->value();
   
   t_init_random_coordinates = ui->cbInitCoordinates->currentData().toBool();
   t_init_random_course = ui->cbInitCourse->currentData().toBool();

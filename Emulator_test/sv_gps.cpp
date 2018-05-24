@@ -107,7 +107,7 @@ void gps::SvGPSEmitter::run()
   while(_started) {
     
     if(QTime::currentTime().msecsSinceStartOfDay() - calc_timer < CLOCK /*_gps_params.gps_timeout*/) {
-      msleep(1); // чтоб не грузило систему
+      usleep(100); // чтоб не грузило систему
       continue;
     }
     

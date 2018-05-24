@@ -84,20 +84,30 @@ namespace ais {
 //                                          // Сообщения для предупреждения и обеспечения безопасности грузоперевозки
 //  };
   
+//  typedef /*struct aisStaticVoyageData1 */{
+  typedef struct {
+    QString name;
+    quint32 ITU_id = 0;
+    quint32 static_voyage_interval = 0;
+//    QString talkerID = "";
+  } aisStaticVoyageData1;
+  
+  
   struct aisNavStat {
     aisNavStat() {  }
-    aisNavStat(int ITU_id, QString name, quint32 static_voyage_interval)
-    {
-      this->ITU_id = ITU_id;
-      this->name = name;
-      this->static_voyage_interval = static_voyage_interval;
-    }
+//    explicit aisNavStat(int ITU_id, const QString& name, quint32 static_voyage_interval)
+//    {
+//      this->ITU_id = ITU_id;
+//      this->name = name;
+//      this->static_voyage_interval = static_voyage_interval;
+//    }
     
-    int ITU_id;
-    QString name;
-    quint32 static_voyage_interval;
-//    quint32 voyage_interval;
-//    quint32 dynamic_interval;
+    quint32 id;    // не удалять!! какой тобаг при работе с редактором статуса SvNavStatEditor
+    int ITU_id = -1;
+    QString name = "";
+    quint32 static_voyage_interval = 0;
+
+    operator =(const aisNavStat& other) { ITU_id = other.ITU_id; name = other.name; static_voyage_interval = other.static_voyage_interval; }
   };
   
   class SvAIS;
@@ -106,6 +116,8 @@ namespace ais {
 //  class SvAISEmitter;
   
 }
+
+Q_DECLARE_METATYPE(ais::aisStaticVoyageData1)
 
 class ais::SvAIS : public idev::SvIDevice
 {

@@ -19,7 +19,9 @@ class SvNavStatEditor : public QDialog
   Q_OBJECT
   
 public:
-  explicit SvNavStatEditor(int vessel_id, ais::aisNavStat navstat, qreal speed, qreal course, QWidget *parent = 0);
+  enum DoneCode { Rejected = QDialog::Rejected, Accepted = QDialog::Accepted, Error };
+  
+  explicit SvNavStatEditor(QWidget *parent, const int vessel_id, const ais::aisNavStat& navstat, const qreal speed, const qreal course);
   ~SvNavStatEditor();
   
   QString last_error() { return _last_error; }
@@ -42,7 +44,6 @@ private:
   
   void loadNavStats();
   
-public slots:
   void accept() Q_DECL_OVERRIDE;
   
 };

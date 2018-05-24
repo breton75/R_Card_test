@@ -20,12 +20,12 @@ namespace gps {
     geo::GEOPOSITION geoposition;
     
 //    quint32 course;
-    qreal course_change_segment;
+    quint32 course_change_segment;
     quint32 course_change_ratio;
     
 //    quint32 speed;
     qreal speed_change_segment;
-    quint32 speed_change_ratio;
+    qreal speed_change_ratio;
     
     quint32 roll_pitch_change_ratio;
     quint32 roll_change_segment;
@@ -43,6 +43,7 @@ namespace gps {
 
   class SvGPS;
   class SvGPSEmitter;
+  class SvGPSOutInterface;
   
 }
 

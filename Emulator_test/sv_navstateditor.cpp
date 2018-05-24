@@ -4,12 +4,12 @@
 SvNavStatEditor* NAVSTATEDITOR_UI;
 extern SvSQLITE *SQLITE;
 
-SvNavStatEditor::SvNavStatEditor(int vessel_id, ais::aisNavStat navstat, qreal speed, qreal course, QWidget *parent) :
+SvNavStatEditor::SvNavStatEditor(QWidget *parent, const int vessel_id, const ais::aisNavStat& navstat, const qreal speed, const qreal course) :
   QDialog(parent),
   ui(new Ui::SvNavStatEditorDialog)
 {
   ui->setupUi(this);
-  
+
   loadNavStats();
   
   _vessel_id = vessel_id;
@@ -21,16 +21,12 @@ SvNavStatEditor::SvNavStatEditor(int vessel_id, ais::aisNavStat navstat, qreal s
   connect(ui->bnSave, SIGNAL(clicked()), this, SLOT(accept()));
   connect(ui->bnCancel, SIGNAL(clicked()), this, SLOT(reject()));
   
-  this->setModal(true);
-  this->show();
-  
 }
 
 SvNavStatEditor::~SvNavStatEditor()
 {
   delete ui;
 }
-
 
 void SvNavStatEditor::loadNavStats()
 {
@@ -63,7 +59,7 @@ void SvNavStatEditor::accept()
   _course = ui->spinCourse->value();
   
   try {
-    _exception.raise("SQLITE");
+
     if(!SQLITE->transaction()) _exception.raise(SQLITE->db.lastError().databaseText());
      
       QSqlError sql = SQLITE->execSQL(QString(SQL_UPDATE_NAVSTAT)
@@ -76,17 +72,16 @@ void SvNavStatEditor::accept()
       
       if(!SQLITE->commit()) _exception.raise(SQLITE->db.lastError().databaseText());
       
+      QDialog::done(Accepted);
   }
   
   catch(SvException &e) {
       
-//    SQLITE->rollback();
+    SQLITE->rollback();
     _last_error = e.err;
-    QDialog::reject();
-    qDebug() << _last_error;
-    return;
+    QDialog::done(Error);
+//    qDebug() << _last_error;
   }
   
-  QDialog::accept();
   
 }

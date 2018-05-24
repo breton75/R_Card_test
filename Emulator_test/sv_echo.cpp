@@ -1,13 +1,14 @@
 #include "sv_echo.h"
 
 /** --------- ECHO --------- **/
-ech::SvECHOAbstract::SvECHOAbstract(int vessel_id, const geo::GEOPOSITION &geopos, const geo::BOUNDS& bounds, QString &imgpath, svlog::SvLog &log)
+ech::SvECHOAbstract::SvECHOAbstract(int vessel_id, const geo::GEOPOSITION &geopos, const geo::BOUNDS& bounds, QString &imgpath, svlog::SvLog &log):
+  idev::SvINetworkDevice(log)
 {
   setVesselId(vessel_id);
   
   _current_geoposition = geopos;
   _bounds = bounds;
-  _log = log;
+//  _log = log;
   
   /// вычисляем ширину карты и высоту в метрах
   /// непонятный коэфф. 1000. определен методом подбора.
@@ -61,7 +62,7 @@ bool ech::SvECHOAbstract::start(quint32 msecs)
   else {
     
     _tcp = new svtcp::SvTcpServer(_log, svtcp::DoNotLog, svtcp::DoNotLog);
-    qDebug() << "start tcp:" << _params.description;
+    
     if(!_tcp->startServer(_params.port)) {
       
       _log << svlog::Critical << svlog::Time << QString("Ошибка при запуске сервера TCP: %1").arg(_tcp->lastError()) << svlog::endl;
@@ -71,10 +72,9 @@ bool ech::SvECHOAbstract::start(quint32 msecs)
       return false;
       
     }
-    
-    connect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
-    
   }
+
+  connect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
   
 //  _udp->s MulticastInterface(QNetworkInterface::interfaceFromIndex(_params.ifc));
 
