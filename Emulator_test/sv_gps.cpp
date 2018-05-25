@@ -186,3 +186,29 @@ qreal gps::SvGPSEmitter::normalize_course(quint32 course)
 }
 
 
+
+gps::SvGPSNetworkInterface::SvGPSNetworkInterface(int vessel_id, svlog::SvLog &log):
+  idev::SvINetworkDevice(log)
+{
+  setVesselId(vessel_id);
+  
+  _log = log;
+  
+}
+
+void gps::SvGPSNetworkInterface::newGPSData(const geo::GEOPOSITION& geopos)
+{
+  _current_geoposition = geopos;
+  
+  QByteArray packet = QByteArray(); 
+
+
+  
+  emit newPacket(packet);
+}
+
+//void gps::SvGPSNetworkInterface::send()
+//{
+
+  
+//}

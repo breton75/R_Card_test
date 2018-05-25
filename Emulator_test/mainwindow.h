@@ -79,10 +79,12 @@ private:
     SerialPortParams _lag_serial_params = SerialPortParams(idev::sdtLAG);
     SerialPortParams _ais_serial_params = SerialPortParams(idev::sdtSelfAIS);
     SerialPortParams _navtex_serial_params = SerialPortParams(idev::sdtNavtex);
-    NetworkParams _echo_multi_network_params = NetworkParams(idev::sdtEchoMulti);
-    NetworkParams _echo_fish_network_params = NetworkParams(idev::sdtEchoFish);
+    idev::NetworkParams _echo_multi_network_params = idev::NetworkParams(idev::sdtEchoMulti);
+    idev::NetworkParams _echo_fish_network_params = idev::NetworkParams(idev::sdtEchoFish);
+    idev::NetworkParams _gps_network_params = idev::NetworkParams(idev::sdtGPS);
     
     gps::SvGPS* _self_gps = nullptr;
+    gps::SvGPSNetworkInterface* _self_gps_ifc = nullptr;
     ais::SvSelfAIS* _self_ais = nullptr;
     vsl::SvVessel* _self_vessel = nullptr;
     lag::SvLAG* _self_lag = nullptr;
@@ -159,6 +161,8 @@ private slots:
     void on_bnSetActive_clicked();
     
     void on_actionNavStat_triggered();
+    
+    void on_bnGPSEditNetworkParams_clicked();
     
 signals:
   void newState(States state);

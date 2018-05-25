@@ -8,7 +8,7 @@ ech::SvECHOAbstract::SvECHOAbstract(int vessel_id, const geo::GEOPOSITION &geopo
   
   _current_geoposition = geopos;
   _bounds = bounds;
-//  _log = log;
+  _log = log;
   
   /// вычисляем ширину карты и высоту в метрах
   /// непонятный коэфф. 1000. определен методом подбора.
@@ -29,95 +29,95 @@ ech::SvECHOAbstract::~SvECHOAbstract()
   deleteLater();
 }
 
-bool ech::SvECHOAbstract::open()
-{
-  _isOpened = true;
-  return _isOpened;
-}
+//bool ech::SvECHOAbstract::open()
+//{
+//  _isOpened = true;
+//  return _isOpened;
+//}
 
-void ech::SvECHOAbstract::close()
-{ 
-  stop();
+//void ech::SvECHOAbstract::close()
+//{ 
+//  stop();
   
-  _isOpened = false;
-}
+//  _isOpened = false;
+//}
 
 bool ech::SvECHOAbstract::start(quint32 msecs)
 {
   
-  if(!_isOpened)
-    return false;
+//  if(!_isOpened)
+//    return false;
   
-  if(_udp) delete _udp;
-  _udp = nullptr;
+//  if(_udp) delete _udp;
+//  _udp = nullptr;
   
-  if(_tcp) delete _tcp;
-  _tcp = nullptr;
+//  if(_tcp) delete _tcp;
+//  _tcp = nullptr;
   
-  if(_params.protocol == QAbstractSocket::UdpSocket) {
+//  if(_params.protocol == QAbstractSocket::UdpSocket) {
   
-    _udp = new QUdpSocket();
+//    _udp = new QUdpSocket();
 
-  }
-  else {
+//  }
+//  else {
     
-    _tcp = new svtcp::SvTcpServer(_log, svtcp::DoNotLog, svtcp::DoNotLog);
+//    _tcp = new svtcp::SvTcpServer(_log, svtcp::DoNotLog, svtcp::DoNotLog);
     
-    if(!_tcp->startServer(_params.port)) {
+//    if(!_tcp->startServer(_params.port)) {
       
-      _log << svlog::Critical << svlog::Time << QString("Ошибка при запуске сервера TCP: %1").arg(_tcp->lastError()) << svlog::endl;
+//      _log << svlog::Critical << svlog::Time << QString("Ошибка при запуске сервера TCP: %1").arg(_tcp->lastError()) << svlog::endl;
       
-      delete _tcp;
+//      delete _tcp;
       
-      return false;
+//      return false;
       
-    }
-  }
+//    }
+//  }
 
-  connect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
+//  connect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
   
-//  _udp->s MulticastInterface(QNetworkInterface::interfaceFromIndex(_params.ifc));
+////  _udp->s MulticastInterface(QNetworkInterface::interfaceFromIndex(_params.ifc));
 
   _clearance = msecs;
       
-  return true;
+  return idev::SvINetworkDevice::start(msecs);
 }
 
-void ech::SvECHOAbstract::stop()
-{
-  disconnect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
+//void ech::SvECHOAbstract::stop()
+//{
+//  disconnect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
   
-  if(_udp) delete _udp;
-  _udp = nullptr;
+//  if(_udp) delete _udp;
+//  _udp = nullptr;
   
-  if(_tcp) {
+//  if(_tcp) {
     
-    _tcp->stopServer();
-    delete _tcp;
+//    _tcp->stopServer();
+//    delete _tcp;
     
-  }
+//  }
   
-  _tcp = nullptr;
+//  _tcp = nullptr;
   
-}
+//}
 
-void ech::SvECHOAbstract::write(const QByteArray &packet)
-{
-  if(!packet.isEmpty()) {
+//void ech::SvECHOAbstract::write(const QByteArray &packet)
+//{
+//  if(!packet.isEmpty()) {
     
-    if(_udp) {
+//    if(_udp) {
       
-      _udp->writeDatagram(packet, QHostAddress(_params.ip), _params.port);
+//      _udp->writeDatagram(packet, QHostAddress(_params.ip), _params.port);
       
-    }
-    else if(_tcp) {
+//    }
+//    else if(_tcp) {
 
-      _tcp->sendToAll(packet);
+//      _tcp->sendToAll(packet);
       
-    }
+//    }
     
-  }
-}
+//  }
+//}
 
 void ech::SvECHOAbstract::calcBeam(ech::Beam* beam)
 {
@@ -126,9 +126,8 @@ void ech::SvECHOAbstract::calcBeam(ech::Beam* beam)
   
   qreal dx = beam->index * cos(qDegreesToRadians(_current_geoposition.course));
   qreal dy = beam->index * sin(qDegreesToRadians(_current_geoposition.course));
-  
-  int x = int(round(x0 / 1000 + dx)) % _depth_map_image.width(); // * 2 -;
-  int y = _depth_map_image.height() - int(round(y0 / 1000 + dy)) % _depth_map_image.height() - 1;
+  int x = int(round(x0 / 1000 + dx)) % (_depth_map_image.width() - 1); // * 2 -;
+  int y = (_depth_map_image.height() - int(round(y0 / 1000 + dy))) % (_depth_map_image.height() - 1);
   
   beam->setXYZ(dx, dy, qreal(qGray(_depth_map_image.pixel(x, y)) + 10));
   beam->setBackscatter(qreal(qGray(_depth_map_image.pixel(y, x)) % 50));

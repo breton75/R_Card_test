@@ -16,26 +16,15 @@ namespace Ui {
 class SvNetworkEditorDialog;
 }
 
-struct NetworkParams {
-  NetworkParams() {  }
-  NetworkParams(idev::SvSimulatedDeviceTypes type) { dev_type = type; }
-  int protocol = QAbstractSocket::UdpSocket;
-  quint32 ip = QHostAddress::Broadcast;
-  quint32 ifc;
-  quint16 port = 30000;
-  idev::SvSimulatedDeviceTypes dev_type;
-  QString description = "";
-};
-
 class SvNetworkEditor : public QDialog
 {
   Q_OBJECT
   
 public:
-  explicit SvNetworkEditor(NetworkParams params, QWidget *parent);
+  explicit SvNetworkEditor(idev::NetworkParams params, QWidget *parent);
   ~SvNetworkEditor();
   
-  NetworkParams params;
+  idev::NetworkParams params;
   
   QString last_error() { return _last_error; }
     

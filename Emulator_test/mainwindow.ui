@@ -99,7 +99,7 @@
           </font>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tabGPS">
           <attribute name="title">
@@ -162,7 +162,7 @@
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_21">
                   <item>
-                   <widget class="QLineEdit" name="editGPSSerialInterface">
+                   <widget class="QLineEdit" name="editGPSInterface">
                     <property name="font">
                      <font>
                       <weight>50</weight>
@@ -179,7 +179,7 @@ color: rgb(0, 0, 127);</string>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="bnGPSEditSerialParams">
+                   <widget class="QPushButton" name="bnGPSEditNetworkParams">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -316,8 +316,8 @@ color: rgb(0, 0, 127);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>367</width>
-                <height>441</height>
+                <width>278</width>
+                <height>303</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1892,7 +1892,7 @@ color: rgb(0, 0, 127);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>83</width>
+                <width>98</width>
                 <height>111</height>
                </rect>
               </property>
@@ -2270,8 +2270,8 @@ color: rgb(0, 0, 127);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>367</width>
-                <height>441</height>
+                <width>221</width>
+                <height>196</height>
                </rect>
               </property>
               <attribute name="label">

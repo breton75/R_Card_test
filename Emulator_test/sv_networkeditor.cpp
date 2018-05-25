@@ -4,7 +4,7 @@
 SvNetworkEditor* NETWORKEDITOR_UI;
 extern SvSQLITE *SQLITE;
 
-SvNetworkEditor::SvNetworkEditor(NetworkParams params, QWidget *parent) :
+SvNetworkEditor::SvNetworkEditor(idev::NetworkParams params, QWidget *parent) :
   QDialog(parent),
   ui(new Ui::SvNetworkEditorDialog)
 {

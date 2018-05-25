@@ -13,8 +13,6 @@
 #include "../../svlib/sv_tcpserverclient.h"
 #include "../../svlib/sv_log.h"
 
-#include "sv_networkeditor.h"
-
 namespace idev {
 
   enum SvSimulatedDeviceTypes {
@@ -29,6 +27,17 @@ namespace idev {
     sdtVessel
   };
 
+  struct NetworkParams {
+    NetworkParams() {  }
+    NetworkParams(SvSimulatedDeviceTypes type) { dev_type = type; }
+    int protocol = QAbstractSocket::UdpSocket;
+    quint32 ip = QHostAddress::Broadcast;
+    quint32 ifc;
+    quint16 port = 30000;
+    SvSimulatedDeviceTypes dev_type;
+    QString description = "";
+  };
+  
   class SvIDevice;
   class SvINetworkDevice;
 
@@ -93,25 +102,27 @@ class idev::SvINetworkDevice : public idev::SvIDevice
   Q_OBJECT
   
 public:
-  SvINetworkDevice(svlog::SvLog log): SvIDevice() { _log = log; }
+  SvINetworkDevice(svlog::SvLog& log): SvIDevice() { _log = log; }
 //  ~SvINetworkDevice(); 
   
-  void setNetworkParams(NetworkParams params) { _params = params; }
+  void setNetworkParams(idev::NetworkParams params) { _params = params; }
   
-  bool open()
+  virtual bool open()
   {
     _isOpened = true;
     return _isOpened;
   }
   
-  void close()
+  virtual void close()
   { 
     stop();
     _isOpened = false;
   }
   
-  bool start(quint32 msecs)
+  virtual bool start(quint32 msecs)
   {
+    Q_UNUSED(msecs);
+    
     if(!_isOpened)
       return false;
     
@@ -148,7 +159,7 @@ public:
     return true;
   }
   
-  void stop()
+  virtual void stop()
   {
     disconnect(this, &SvINetworkDevice::newPacket, this, &SvINetworkDevice::write);
     
@@ -166,7 +177,7 @@ private:
   svtcp::SvTcpServer *_tcp = nullptr;
   
   svlog::SvLog _log;
-  NetworkParams _params;
+  idev::NetworkParams _params;
   
 signals:
   void newPacket(const QByteArray& packet);

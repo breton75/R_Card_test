@@ -127,7 +127,7 @@ public:
   friend class ech::SvECHOFish;
   
 private:
-//  svlog::SvLog _log;
+  svlog::SvLog _log;
   
   int _vessel_id = -1;
 //  NetworkParams _params;

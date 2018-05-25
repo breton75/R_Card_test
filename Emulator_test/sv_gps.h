@@ -25,7 +25,7 @@ namespace gps {
     
 //    quint32 speed;
     qreal speed_change_segment;
-    qreal speed_change_ratio;
+    quint32 speed_change_ratio;
     
     quint32 roll_pitch_change_ratio;
     quint32 roll_change_segment;
@@ -43,7 +43,7 @@ namespace gps {
 
   class SvGPS;
   class SvGPSEmitter;
-  class SvGPSOutInterface;
+  class SvGPSNetworkInterface;
   
 }
 
@@ -141,44 +141,31 @@ signals:
 };
 
 
-//class gps::SvGPSThread : public QThread
-//{
-//  Q_OBJECT
+class gps::SvGPSNetworkInterface : public idev::SvINetworkDevice
+{
+  Q_OBJECT
   
-//public:
-//  SvGPSThread(const gps::GPSParams& params, geo::BOUNDS* bounds = nullptr);
-//  ~SvGPSThread();
+public:
+  SvGPSNetworkInterface(int vessel_id, svlog::SvLog &log);
+//  ~SvGPSNetworkInterface();
   
-//  void stop();
-    
-//private:
-//  void run() Q_DECL_OVERRIDE;
+  void setVesselId(int id) { _vessel_id = id; }
+  int vesselId() { return _vessel_id; }
   
-//  bool _started = false;
-//  bool _finished = false;
+private:
+  svlog::SvLog _log;
   
-//  gps::GPSParams _gps_params;
-//  geo::BOUNDS* _bounds = nullptr;
+  int _vessel_id = -1;
   
-//  geo::COORD _current_coordinates;
-//  qreal _current_course;
-//  qreal _current_speed;
+  idev::NetworkParams _params;
   
-////  geo::COORD _last_coordinates;
-////  qreal _last_course;
+  geo::GEOPOSITION _current_geoposition;
   
-//  qreal _one_tick_length; /* длина пути в метрах, за один отсчет таймера */
+//  void send();
   
-////  qreal inline lonOffset();
-//  gps::LonLatOffset lonlatOffset();
+public slots:
+  void newGPSData(const geo::GEOPOSITION& geopos);
   
-////  int quarter();
-//  void normal_angle();
-  
-//signals:
-//  void new_coordinates(geo::COORD coord);
-//  void new_course(qreal course);
-  
-//};
+};
 
 #endif // SV_GPS_H

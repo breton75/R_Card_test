@@ -737,6 +737,8 @@ bool MainWindow::createSelfVessel()
     _self_gps = new gps::SvGPS(vessel_id, gps_params, _bounds, last_update); 
     GPSs->insert(vessel_id, _self_gps);
     
+    _self_gps_ifc = new gps::SvGPSNetworkInterface(vessel_id, log);
+    
     // АИС
     _self_ais = new ais::SvSelfAIS(vessel_id, static_voyage_data, dynamic_data, log, last_update);
     AISs->insert(vessel_id, _self_ais);
@@ -767,7 +769,8 @@ bool MainWindow::createSelfVessel()
     
     // подключаем
     connect(_self_gps, &gps::SvGPS::newGPSData, _self_ais, &ais::SvSelfAIS::newGPSData);
-    connect(_self_gps, &gps::SvGPS::newGPSData, _self_lag, &ais::SvSelfAIS::newGPSData);
+    connect(_self_gps, &gps::SvGPS::newGPSData, _self_lag, &lag::SvLAG::newGPSData);
+    connect(_self_gps, &gps::SvGPS::newGPSData, _self_gps_ifc, &gps::SvGPSNetworkInterface::newGPSData);
     
     connect(_self_gps, &gps::SvGPS::passed1m, _self_multi_echo, &ech::SvECHOMulti::passed1m);
     connect(_self_gps, &gps::SvGPS::passed1m, _self_fish_echo, &ech::SvECHOFish::passed1m);
@@ -1488,6 +1491,32 @@ void MainWindow::on_bnECHOFishEditNetworkParams_clicked()
   ui->editECHOFishInterface->setText(_echo_fish_network_params.description);
 }
 
+void MainWindow::on_bnGPSEditNetworkParams_clicked()
+{
+  NETWORKEDITOR_UI = new SvNetworkEditor(_gps_network_params, this);
+  if(NETWORKEDITOR_UI->exec() != QDialog::Accepted) {
+
+    if(!NETWORKEDITOR_UI->last_error().isEmpty()) {
+      QMessageBox::critical(this, "Ошибка", QString("Ошибка при изменении параметров:\n%1").arg(NETWORKEDITOR_UI->last_error()), QMessageBox::Ok);
+    
+      delete NETWORKEDITOR_UI;
+        
+      return;
+    }
+    
+  }
+  
+  _gps_network_params.ifc = NETWORKEDITOR_UI->params.ifc;
+  _gps_network_params.protocol = NETWORKEDITOR_UI->params.protocol;
+  _gps_network_params.ip = NETWORKEDITOR_UI->params.ip;
+  _gps_network_params.port = NETWORKEDITOR_UI->params.port;
+  _gps_network_params.description = NETWORKEDITOR_UI->params.description;
+  
+  delete NETWORKEDITOR_UI;
+
+  ui->editGPSInterface->setText(_gps_network_params.description);
+}
+
 void MainWindow::on_bnNAVTEXAlarmSend_clicked()
 {
   _navtex->alarm(ui->spinNAVTEXAlarmId->value(),
@@ -1980,3 +2009,4 @@ void MainWindow::on_actionNavStat_triggered()
   
   delete NAVSTATEDITOR_UI;
 }
+
