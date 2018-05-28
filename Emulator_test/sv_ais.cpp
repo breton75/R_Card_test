@@ -69,7 +69,7 @@ void ais::SvSelfAIS::on_receive_message(ais::SvAIS* otherAIS, quint32 message_id
       case 5:
       {
        
-        QStringList l = nmea::ais_message_5(_static_voyage_data.talkerID, otherAIS->staticVoyageData(), otherAIS->navStatus());
+        QStringList l = nmea::ais_message_5(_static_voyage_data.talkerID, otherAIS->staticVoyageData()); //, otherAIS->navStatus());
         emit write_message(l.first());
         for(int i = 0; i < 100000; i++) ;
         emit write_message(l.last());

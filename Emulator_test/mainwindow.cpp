@@ -281,6 +281,12 @@ void MainWindow::on_bnStart_clicked()
         if(ui->checkECHOFishEnabled->isChecked()) 
           if(!_self_fish_echo->open()) _exception.raise(QString("Рыбопром. эхолот: %1").arg(_self_fish_echo->lastError()));
         
+        /// GPS Network Interface
+        _self_gps_ifc->setNetworkParams(_gps_network_params);
+        if(ui->checkGPSEnabled->isChecked()) 
+          if(!_self_gps_ifc->open()) _exception.raise(QString("GPS: %1").arg(_self_gps_ifc->lastError()));
+        
+        
       }
       
       catch(SvException &e) {
@@ -380,6 +386,7 @@ MainWindow::~MainWindow()
   delete GPSs;
   delete VESSELs;
   delete _navtex;
+  delete _self_gps_ifc;
 
   
   QString s = AppParams::saveLayout(this);
@@ -525,7 +532,22 @@ bool MainWindow::read_devices_params()
     
           break;
         }
-        
+          
+        case idev::sdtGPS: {
+          
+          _gps_network_params.ifc = q->value("network_interface").toUInt();
+          _gps_network_params.protocol = q->value("network_protocol").toUInt();
+          
+          _gps_network_params.ip = q->value("network_ip").toUInt();
+          _gps_network_params.port = q->value("network_port").toUInt();
+          _gps_network_params.description = q->value("description").toString();
+
+          ui->editGPSInterface->setText(_gps_network_params.description);
+          ui->checkGPSEnabled->setChecked(q->value("is_active").toBool());
+    
+          break;
+        }
+          
         default:
           break;
       }
@@ -787,6 +809,8 @@ bool MainWindow::createSelfVessel()
     
     connect(this, &MainWindow::startGPSEmulation, _self_gps, &gps::SvGPS::start);
     connect(this, &MainWindow::stopGPSEmulation, _self_gps, &gps::SvGPS::stop);
+    connect(this, &MainWindow::startGPSEmulation, _self_gps_ifc, &gps::SvGPSNetworkInterface::start);
+    connect(this, &MainWindow::stopGPSEmulation, _self_gps_ifc, &gps::SvGPSNetworkInterface::stop);
     
     connect(this, &MainWindow::startLAGEmulation, _self_lag, &lag::SvLAG::start);
     connect(this, &MainWindow::stopLAGEmulation, _self_lag, &lag::SvLAG::stop);
@@ -1336,8 +1360,8 @@ ais::aisDynamicData MainWindow::readAISDynamicData(QSqlQuery* q)
   ais::aisDynamicData result;
   result.geoposition.latitude = q->value("dynamic_latitude").isNull() ? -1.0 : q->value("dynamic_latitude").toReal();
   result.geoposition.longtitude = q->value("dynamic_longtitude").isNull() ? -1.0 : q->value("dynamic_longtitude").toReal();
-  result.geoposition.course = q->value("dynamic_course").isNull() ? -1 : q->value("dynamic_course").toReal();
-  result.geoposition.speed = q->value("dynamic_speed").isNull() ? -1 : q->value("dynamic_speed").toReal();
+  result.geoposition.course = q->value("dynamic_course").isNull() ? -1.0 : q->value("dynamic_course").toReal();
+  result.geoposition.speed = q->value("dynamic_speed").isNull() ? -1.0 : q->value("dynamic_speed").toReal();
  
   return result;
 }

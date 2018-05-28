@@ -12,12 +12,12 @@
 #include <QUdpSocket>
 
 #include "geo.h"
-#include "sv_gps.h"
 #include "sv_idevice.h"
-#include "../../svlib/sv_log.h"
 #include "sv_serialeditor.h"
+
+#include "../../svlib/sv_log.h"
 #include "../../svlib/sv_sqlite.h"
-#include "sv_exception.h"
+#include "../../svlib/sv_exception.h"
 
 #define DO_NOT_CHANGE_s "do not change"
 #define DO_NOT_CHANGE_i -1
@@ -83,14 +83,6 @@ namespace ais {
 //    quint32 team;                         // Количество людей на борту
 //                                          // Сообщения для предупреждения и обеспечения безопасности грузоперевозки
 //  };
-  
-//  typedef /*struct aisStaticVoyageData1 */{
-  typedef struct {
-    QString name;
-    quint32 ITU_id = 0;
-    quint32 static_voyage_interval = 0;
-//    QString talkerID = "";
-  } aisStaticVoyageData1;
   
   
   struct aisNavStat {

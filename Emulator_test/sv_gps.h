@@ -10,6 +10,7 @@
 
 #include "sv_idevice.h"
 #include "geo.h"
+#include "nmea.h"
 
 namespace gps {
 
@@ -132,7 +133,7 @@ private:
   qreal _one_tick_length;         // длина пути в метрах, за один отсчет
   quint32 _multiplier;
   
-  qreal normalize_course(quint32 course);
+  qreal normalize_course(qreal course);
 
 signals:
   void newGPSData(const geo::GEOPOSITION& geopos);

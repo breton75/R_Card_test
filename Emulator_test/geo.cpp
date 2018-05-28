@@ -75,7 +75,7 @@ qreal geo::get_rnd_course(int diff)
 qreal geo::get_rnd_speed(int diff)
 {
   qsrand(QTime::currentTime().msec() + diff);
-  return qreal(qrand() % 50); // максимальная скорость 50 узлов
+  return qreal(qrand() % 30); // максимальная скорость 30 узлов
 }
 
 geo::COORDINATES geo::get_rnd_coordinates(const BOUNDS &bounds, int diff)

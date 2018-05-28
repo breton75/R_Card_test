@@ -142,7 +142,7 @@ void gps::SvGPSEmitter::run()
       
       qsrand(QTime::currentTime().msecsSinceStartOfDay());
       int a = _current_geo_position.speed * (qreal(qrand() % _gps_params.speed_change_ratio) / 100.0);
-      int b = -1 + (2 * (qrand() % 2));
+      int b = (_current_geo_position.speed + a) > 30 ? -1 : -1 + (2 * (qrand() % 2));
       
       _current_geo_position.speed += a * b;
       
@@ -179,7 +179,7 @@ void gps::SvGPSEmitter::run()
   
 }
 
-qreal gps::SvGPSEmitter::normalize_course(quint32 course)
+qreal gps::SvGPSEmitter::normalize_course(qreal course)
 {
   qreal norm_course = course > 0 ? course % 360 : 360 - qAbs(course % 360);
   return norm_course;
@@ -200,9 +200,13 @@ void gps::SvGPSNetworkInterface::newGPSData(const geo::GEOPOSITION& geopos)
 {
   _current_geoposition = geopos;
   
+  if(!_isOpened) return;
+  
   QByteArray packet = QByteArray(); 
 
-
+  QString s = nmea::gps_RMC(_current_geoposition);
+  
+  packet.append(s);
   
   emit newPacket(packet);
 }

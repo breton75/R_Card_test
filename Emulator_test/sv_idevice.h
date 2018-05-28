@@ -29,7 +29,16 @@ namespace idev {
 
   struct NetworkParams {
     NetworkParams() {  }
-    NetworkParams(SvSimulatedDeviceTypes type) { dev_type = type; }
+    NetworkParams(SvSimulatedDeviceTypes type)
+    { 
+      dev_type = type;
+      switch (type) {
+        case sdtGPS: port = 30000; break;
+        case sdtEchoMulti: port = 30001; break;
+        case sdtEchoFish: port = 30002; break;
+      }
+    }
+    
     int protocol = QAbstractSocket::UdpSocket;
     quint32 ip = QHostAddress::Broadcast;
     quint32 ifc;
@@ -188,8 +197,10 @@ private slots:
   {
     if(!packet.isEmpty()) {
       
-      if(_udp)
-        _udp->writeDatagram(packet, QHostAddress(_params.ip), _params.port);
+      if(_udp) {
+        
+        _udp->writeDatagram(packet, QHostAddress::Broadcast, _params.port);
+      }
 
       else if(_tcp) 
         _tcp->sendToAll(packet);

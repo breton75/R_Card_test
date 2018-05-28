@@ -165,7 +165,7 @@ QString nmea::ais_message_1_2_3(quint8 message_id, QString& talkerID, ais::aisSt
   
 }
 
-QStringList nmea::ais_message_5(QString &talkerID, ais::aisStaticVoyageData* static_voyage_data, ais::aisNavStat* navstat)
+QStringList nmea::ais_message_5(QString &talkerID, ais::aisStaticVoyageData* static_voyage_data)
 {
   QStringList result = QStringList();
   
@@ -480,4 +480,25 @@ QString nmea::alarm_ALR(QString talkerID, int id , QString state, QString text)
   
   return result;
   
+}
+
+QString nmea::gps_RMC(const geo::GEOPOSITION &geopos)
+{
+  QString result = QString("$GPRMC,%1,A,%2,%3,%4,%5,%6,%7,%8,,,*")
+                   .arg(geopos.utc.time().toString("hhmmss.zzz"))
+                   .arg(geopos.latitude, 0, 'f', 4)
+                   .arg(geopos.latitude > 0 ? "N" : "S")
+                   .arg(geopos.longtitude, 0, 'f', 4)
+                   .arg(geopos.longtitude > 0 ? "E" : "W")
+                   .arg(geopos.speed, 0, 'f', 2)
+                   .arg(geopos.course, 0, 'f', 2)
+                   .arg(geopos.utc.date().toString("ddMMyy"));
+  
+  quint8 src = 0;
+  for(int i = 1; i <= result.length() - 2; i++)
+    src = src ^ quint8(result.at(i).toLatin1());
+  
+  result.append(QString("%1\r\n").arg(src, 2, 16).replace(' ', '0').toUpper());
+  
+  return result;
 }

@@ -126,9 +126,10 @@ void ech::SvECHOAbstract::calcBeam(ech::Beam* beam)
   
   qreal dx = beam->index * cos(qDegreesToRadians(_current_geoposition.course));
   qreal dy = beam->index * sin(qDegreesToRadians(_current_geoposition.course));
-  int x = int(round(x0 / 1000 + dx)) % (_depth_map_image.width() - 1); // * 2 -;
-  int y = (_depth_map_image.height() - int(round(y0 / 1000 + dy))) % (_depth_map_image.height() - 1);
   
+  int x = int(round(x0 / 1000 + dx)) % (_depth_map_image.width() - 1); // * 2 -;
+  int y = (_depth_map_image.height() - 1) - (int(round(y0 / 1000 + dy)) % (_depth_map_image.height() - 1));
+//  qDebug() << x0 << y0 
   beam->setXYZ(dx, dy, qreal(qGray(_depth_map_image.pixel(x, y)) + 10));
   beam->setBackscatter(qreal(qGray(_depth_map_image.pixel(y, x)) % 50));
   

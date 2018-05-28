@@ -35,7 +35,7 @@ namespace nmea {
   
   QString ais_message_1_2_3(quint8 message_id, QString &talkerID, ais::aisStaticVoyageData *static_voyage_data, quint8 nav_status, geo::GEOPOSITION& geopos);
   
-  QStringList ais_message_5(QString &talkerID, ais::aisStaticVoyageData *static_voyage_data, ais::aisNavStat* navstat);
+  QStringList ais_message_5(QString &talkerID, ais::aisStaticVoyageData *static_voyage_data);
   
   QString ais_sentence_ABK(quint8 message_id, QString &talkerID, ais::aisStaticVoyageData* static_voyage_data);
   
@@ -47,7 +47,9 @@ namespace nmea {
   QStringList navtex_NRX(const nav::navtexData &ndata);
   
   QString alarm_ALR(QString talkerID, int id, QString state, QString text);
-                
+
+  QString gps_RMC(const geo::GEOPOSITION &geopos);
+  
 }
 
 
