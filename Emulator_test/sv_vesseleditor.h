@@ -6,6 +6,7 @@
 
 #include "geo.h"
 #include "sql_defs.h"
+#include "sv_ais.h"
 
 #include "../../svlib/sv_sqlite.h"
 #include "../../svlib/sv_exception.h"
@@ -21,7 +22,7 @@ class SvVesselEditor : public QDialog
 public:
   enum ShowMode { smNew = 0, smEdit = 1 };
                   
-  explicit SvVesselEditor(QWidget *parent, int vesselId = -1, bool self = false);
+  explicit SvVesselEditor(QWidget *parent, int vesselId = -1, geo::GEOPOSITION* geopos = 0, bool self = false);
 
   ~SvVesselEditor();
   
@@ -57,11 +58,15 @@ public:
   bool    t_init_random_coordinates = false;
   bool    t_init_random_course = false;
   bool    t_init_random_speed = false;
+  bool    t_init_fixed_course = false;
+  bool    t_init_fixed_speed = false;
   quint32 t_init_course_change_ratio = 45;
   qreal   t_init_course_change_segment = 10;
   quint32 t_init_speed_change_ratio = 10;
   qreal   t_init_speed_change_segment = 4;
   
+  ais::aisNavStat t_navstat;
+  geo::GEOPOSITION t_geopos;
   
 public slots:
   void accept() Q_DECL_OVERRIDE;
@@ -75,7 +80,14 @@ private:
   void loadVesselTypes();
   void loadCargoTypes();
   void loadInitRandoms();
+  void loadNavStats();
   
+private slots:
+  void on_checkCourseClicked(bool checked);
+  void on_checkSpeedClicked(bool checked);
+  
+  void on_courseCurrentIndexChanged(int index);
+  void on_speedCurrentIndexChanged(int index);
 };
 
 #endif // SV_VESSELEDITOR_H

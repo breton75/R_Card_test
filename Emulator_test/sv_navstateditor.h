@@ -14,6 +14,21 @@ namespace Ui {
 class SvNavStatEditorDialog;
 }
 
+enum PredefPosItems {
+  
+  ppiCurrent,
+  ppiCenter,
+  ppiLeftTop,
+  ppiLeft,
+  ppiLeftBottom,
+  ppiTop,
+  ppiBottom,
+  ppiRightTop,
+  ppiRight,
+  ppiRightBottom
+  
+};
+
 class SvNavStatEditor : public QDialog
 {
   Q_OBJECT
@@ -21,14 +36,15 @@ class SvNavStatEditor : public QDialog
 public:
   enum DoneCode { Rejected = QDialog::Rejected, Accepted = QDialog::Accepted, Error };
   
-  explicit SvNavStatEditor(QWidget *parent, const int vessel_id, const ais::aisNavStat& navstat, const qreal speed, const qreal course);
+  explicit SvNavStatEditor(QWidget *parent, const int vessel_id, const ais::aisNavStat& navstat, const geo::GEOPOSITION& gepos, const geo::BOUNDS& bounds); // const qreal speed, const qreal course);
   ~SvNavStatEditor();
   
   QString last_error() { return _last_error; }
   
   ais::aisNavStat navstat() { return _navstat; }
-  qreal speed() { return _speed; }
-  qreal course() { return _course; }
+  geo::GEOPOSITION geopos() { return _geopos; }
+//  qreal speed() { return _speed; }
+//  qreal course() { return _course; }
   
 private:
   Ui::SvNavStatEditorDialog *ui;
@@ -36,15 +52,21 @@ private:
   int _vessel_id;
   
   ais::aisNavStat _navstat;
-  qreal _speed;
-  qreal _course;
+  geo::GEOPOSITION _geopos;
+  geo::BOUNDS _bounds;
+//  qreal _speed;
+//  qreal _course;
   
   QString _last_error = "";
   SvException _exception;
   
   void loadNavStats();
+  void loadPredefinedPositions();
   
   void accept() Q_DECL_OVERRIDE;
+  
+private slots:
+  void on_currentIndexChanged(int index);
   
 };
 

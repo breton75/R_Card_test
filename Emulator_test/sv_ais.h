@@ -109,8 +109,6 @@ namespace ais {
   
 }
 
-Q_DECLARE_METATYPE(ais::aisStaticVoyageData1)
-
 class ais::SvAIS : public idev::SvIDevice
 {
   Q_OBJECT
@@ -125,6 +123,8 @@ public:
   void setStaticVoyageData(const ais::aisStaticVoyageData& svdata) { _static_voyage_data = svdata; }
   void setDynamicData(const ais::aisDynamicData& ddata) { _dynamic_data = ddata; }
   
+  void setLongtitude(const qreal longtitude) { _dynamic_data.geoposition.longtitude = longtitude; }
+  void setLatitude(const qreal latitude) { _dynamic_data.geoposition.latitude = latitude; }
   void setSpeed(const qreal speed) { _dynamic_data.geoposition.speed = speed; }
   void setCourse(const qreal course) { _dynamic_data.geoposition.course = course; }
   

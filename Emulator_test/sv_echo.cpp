@@ -19,8 +19,8 @@ ech::SvECHOAbstract::SvECHOAbstract(int vessel_id, const geo::GEOPOSITION &geopo
   if(!_depth_map_image.load(imgpath))
     _log << svlog::Critical << svlog::Time << QString("Не удалось загрузить файл %1").arg(imgpath) << svlog::endl;
   
-  _koeff_lon = _map_width_meters / (_bounds.max_lon - _bounds.min_lon); // / 1000;
-  _koeff_lat = _map_height_meters / (_bounds.max_lat - _bounds.min_lat); // / 1000;
+//  _koeff_lon = _map_width_meters / (_bounds.max_lon - _bounds.min_lon); // / 1000;
+//  _koeff_lat = _map_height_meters / (_bounds.max_lat - _bounds.min_lat); // / 1000;
   
 }
 
@@ -121,14 +121,18 @@ bool ech::SvECHOAbstract::start(quint32 msecs)
 
 void ech::SvECHOAbstract::calcBeam(ech::Beam* beam)
 {
-  qreal x0 = (_current_geoposition.longtitude - _bounds.min_lon) * _koeff_lon;
-  qreal y0 = (_bounds.max_lat - _current_geoposition.latitude) * _koeff_lat;
+  qreal xm = geo::lon2lon_distance(_bounds.min_lon, _current_geoposition.longtitude, _current_geoposition.latitude);
+  qreal ym = geo::lat2lat_distance(_current_geoposition.latitude, _bounds.max_lat, _current_geoposition.longtitude);
   
   qreal dx = beam->index * cos(qDegreesToRadians(_current_geoposition.course));
   qreal dy = beam->index * sin(qDegreesToRadians(_current_geoposition.course));
   
-  int x = int(round(x0 / 1000 + dx)) % (_depth_map_image.width() - 1); // * 2 -;
-  int y = (_depth_map_image.height() - 1) - (int(round(y0 / 1000 + dy)) % (_depth_map_image.height() - 1));
+  int x = int(round(xm + dx)) % _depth_map_image.width();
+  int y = int(round(ym + dy)) % _depth_map_image.height();
+  
+  x = x < 0 ? _depth_map_image.width() + x : x;
+  y = y < 0 ? _depth_map_image.height() + y : y;
+  
 //  qDebug() << x0 << y0 
   beam->setXYZ(dx, dy, qreal(qGray(_depth_map_image.pixel(x, y)) + 10));
   beam->setBackscatter(qreal(qGray(_depth_map_image.pixel(y, x)) % 50));

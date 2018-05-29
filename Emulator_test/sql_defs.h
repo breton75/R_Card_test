@@ -34,6 +34,8 @@
                            "       gps.init_random_coordinates AS init_random_coordinates, " \
                            "       gps.init_random_course AS init_random_course, " \
                            "       gps.init_random_speed AS init_random_speed, " \
+                           "       gps.init_fixed_course AS init_fixed_course, " \
+                           "       gps.init_fixed_speed AS init_fixed_speed, " \
                            "       gps.init_course_change_ratio AS init_course_change_ratio, " \
                            "       gps.init_course_change_segment AS init_course_change_segment, " \
                            "       gps.init_speed_change_ratio AS init_speed_change_ratio, " \
@@ -91,22 +93,25 @@
                            "                 voyage_ETA_month, " CR \
                            "                 voyage_draft, " CR \
                            "                 voyage_cargo_ITU_id, " CR \
-                           "                 voyage_team)  " CR \
+                           "                 voyage_team, " CR \
+                           "                 nav_status_ITU_id)  " CR \
                            "VALUES ((select id from vessels order by id desc limit 1), " CR \
-                           "        %1, %2, %3, '%4', '%5', %6, %7, %8, %9, %10, '%11', '%12', '%13', %14, %15, %16, %17, %18);"
+                           "        %1, %2, %3, '%4', '%5', %6, %7, %8, %9, %10, '%11', '%12', '%13', %14, %15, %16, %17, %18, %19);"
 
-#define SQL_INSERT_NEW_GPS "INSERT INTO gps (vessel_id," CR \
-                           "                 timeout," CR \
-                           "                 init_random_coordinates," CR \
-                           "                 init_random_course," CR \
-                           "                 init_random_speed," CR \
-                           "                 init_course_change_ratio," CR \
-                           "                 init_speed_change_ratio," CR \
-                           "                 init_course_change_segment," CR \
-                           "                 init_speed_change_segment," CR \
+#define SQL_INSERT_NEW_GPS "INSERT INTO gps (vessel_id, " CR \
+                           "                 timeout, " CR \
+                           "                 init_random_coordinates, " CR \
+                           "                 init_random_course, " CR \
+                           "                 init_random_speed, " CR \
+                           "                 init_fixed_course, " CR \
+                           "                 init_fixed_speed, " CR \
+                           "                 init_course_change_ratio, " CR \
+                           "                 init_speed_change_ratio, " CR \
+                           "                 init_course_change_segment, " CR \
+                           "                 init_speed_change_segment, " CR \
                            "                 last_update)" CR \
                            "VALUES ((select id from vessels order by id desc limit 1), " CR \
-                           "        %1, '%2', '%3', '%4', %5, %6, %7, %8, " CR \
+                           "        %1, '%2', '%3', '%4', '%5', '%6', %7, %8, %9, %10, " CR \
                            "        strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'));"
 
 
@@ -127,24 +132,36 @@
                        "               voyage_ETA_month = %15, " CR \
                        "               voyage_draft = %16, " CR \
                        "               voyage_cargo_ITU_id = %17, " CR \
-                       "               voyage_team = %18  " CR \
-                       "WHERE vessel_id = %19 "
+                       "               voyage_team = %18, " CR \
+                       "               nav_status_ITU_id = %19 " CR \  
+                       "WHERE vessel_id = %20 "
 
-#define SQL_UPDATE_NAVSTAT "UPDATE ais SET dynamic_course = %1, " CR \
-                           "               dynamic_speed = %2, " CR \
-                           "               nav_status_ITU_id = %3 " CR \
-                           "WHERE vessel_id = %4 "
 
 #define SQL_UPDATE_GPS "UPDATE gps SET timeout = %1," CR \
                        "               init_random_coordinates = '%2'," CR \
                        "               init_random_course = '%3'," CR \
                        "               init_random_speed = '%4'," CR \
-                       "               init_course_change_ratio = %5," CR \
-                       "               init_speed_change_ratio = %6," CR \
-                       "               init_course_change_segment = %7," CR \
-                       "               init_speed_change_segment = %8," CR \
+                       "               init_fixed_course = '%5', " CR \
+                       "               init_fixed_speed = '%6', " CR \
+                       "               init_course_change_ratio = %7," CR \
+                       "               init_speed_change_ratio = %8," CR \
+                       "               init_course_change_segment = %9," CR \
+                       "               init_speed_change_segment = %10," CR \
                        "               last_update = strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime')" CR \
-                       "WHERE vessel_id = %9"
+                       "WHERE vessel_id = %11"
+
+#define SQL_UPDATE_NAVSTAT_AIS "UPDATE ais SET dynamic_course = %1, " CR \
+                               "               dynamic_speed = %2, " CR \
+                               "               nav_status_ITU_id = %3, " CR \
+                               "               dynamic_latitude = %4, " CR \
+                               "               dynamic_longtitude = %5 " CR \
+                               "WHERE vessel_id = %6 "
+
+#define SQL_UPDATE_NAVSTAT_GPS "UPDATE gps SET init_fixed_course = '%1', " CR \
+                               "               init_fixed_speed = '%2', " CR \
+                               "               last_update = strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime')" CR \
+                               "WHERE vessel_id = %3"
+
 
 //#define SQL_UPDATE_AIS_DYNAMIC "UPDATE ais SET 
 

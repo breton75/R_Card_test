@@ -39,6 +39,8 @@ namespace gps {
     bool init_random_speed;
     bool init_random_roll;
     bool init_random_pitch;
+    bool init_fixed_course;
+    bool init_fixed_speed;
     
   };
 

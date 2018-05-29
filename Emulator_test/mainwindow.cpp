@@ -1095,7 +1095,7 @@ void MainWindow::editVessel(int id)
   if(_current_state != sStopped)
     return;
   
-  VESSELEDITOR_UI = new SvVesselEditor(0, id);
+  VESSELEDITOR_UI = new SvVesselEditor(0, id, &VESSELs->value(id)->ais()->dynamicData()->geoposition);
   if(VESSELEDITOR_UI->exec() != QDialog::Accepted) {
     
     if(!VESSELEDITOR_UI->last_error().isEmpty())
@@ -1105,6 +1105,8 @@ void MainWindow::editVessel(int id)
     
     return;
   }
+  
+  geo::GEOPOSITION g = VESSELEDITOR_UI->t_geopos;
   
   delete VESSELEDITOR_UI;
     
@@ -1134,7 +1136,11 @@ void MainWindow::editVessel(int id)
   /** --------- изменяем данные судна ----------- **/
   QDateTime last_update = q->value("gps_last_update").toDateTime();
   ais::aisStaticVoyageData static_voyage_data = readAISStaticVoyageData(q); 
+  
+  VESSELs->value(id)->ais()->setCourse(g.course);
+  VESSELs->value(id)->ais()->setSpeed(g.speed);
   ais::aisDynamicData *dynamic_data = VESSELs->value(id)->ais()->dynamicData();
+  
   gps::gpsInitParams gps_params = readGPSInitParams(q, *dynamic_data, last_update);
   
   q->finish();
@@ -1279,11 +1285,12 @@ gps::gpsInitParams MainWindow::readGPSInitParams(QSqlQuery* q, ais::aisDynamicDa
   result.init_random_coordinates = q->value("init_random_coordinates").toBool();
   result.init_random_course = q->value("init_random_course").toBool();
   result.init_random_speed = q->value("init_random_speed").toBool();
+  result.init_fixed_course = q->value("init_fixed_course").toBool();
+  result.init_fixed_speed = q->value("init_fixed_speed").toBool();
   result.course_change_ratio = q->value("init_course_change_ratio").toUInt();
   result.course_change_segment = q->value("init_course_change_segment").toReal();
   result.speed_change_ratio = q->value("init_speed_change_ratio").toUInt();
   result.speed_change_segment = q->value("init_speed_change_segment").toReal();
-  
   // начальные координаты
   if(result.init_random_coordinates || 
      (!result.init_random_coordinates && !dynamic_data.geoposition.isValidCoordinates())) {
@@ -2010,7 +2017,7 @@ void MainWindow::on_actionNavStat_triggered()
   qreal speed = VESSELs->value(_selected_vessel_id)->ais()->dynamicData()->geoposition.speed;
   qreal course = VESSELs->value(_selected_vessel_id)->ais()->dynamicData()->geoposition.course;
   
-  NAVSTATEDITOR_UI = new SvNavStatEditor(0, _selected_vessel_id, navstat, speed, course);
+  NAVSTATEDITOR_UI = new SvNavStatEditor(0, _selected_vessel_id, navstat, _self_ais->dynamicData()->geoposition, _bounds); // speed, course);
 
   switch (NAVSTATEDITOR_UI->exec()) {
     
@@ -2024,8 +2031,11 @@ void MainWindow::on_actionNavStat_triggered()
     case SvNavStatEditor::Accepted:
       
       VESSELs->value(_selected_vessel_id)->ais()->setNavStatus(NAVSTATEDITOR_UI->navstat());
-      VESSELs->value(_selected_vessel_id)->ais()->setCourse(NAVSTATEDITOR_UI->course());
-      VESSELs->value(_selected_vessel_id)->ais()->setSpeed(NAVSTATEDITOR_UI->speed());
+      VESSELs->value(_selected_vessel_id)->ais()->setCourse(NAVSTATEDITOR_UI->geopos().latitude);
+      VESSELs->value(_selected_vessel_id)->ais()->setCourse(NAVSTATEDITOR_UI->geopos().longtitude);
+      VESSELs->value(_selected_vessel_id)->ais()->setCourse(NAVSTATEDITOR_UI->geopos().course);
+      VESSELs->value(_selected_vessel_id)->ais()->setSpeed(NAVSTATEDITOR_UI->geopos().speed);
+      
       VESSELs->value(_selected_vessel_id)->updateVessel();
       
       break;

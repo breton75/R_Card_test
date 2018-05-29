@@ -5,7 +5,7 @@ SvVesselEditor *VESSELEDITOR_UI;
 extern SvSQLITE *SQLITE;
 extern geo::UnitsInfo CMU;
 
-SvVesselEditor::SvVesselEditor(QWidget *parent, int vesselId, bool self) :
+SvVesselEditor::SvVesselEditor(QWidget *parent, int vesselId, geo::GEOPOSITION *geopos, bool self) :
   QDialog(parent),
   ui(new Ui::SvVesselEditorDialog)
 {
@@ -16,6 +16,7 @@ SvVesselEditor::SvVesselEditor(QWidget *parent, int vesselId, bool self) :
   loadCargoTypes();
   loadVesselTypes();
   loadInitRandoms();
+  loadNavStats();
   
   t_self = self;
   
@@ -57,23 +58,31 @@ SvVesselEditor::SvVesselEditor(QWidget *parent, int vesselId, bool self) :
       t_voyage_team = q->value("voyage_team").toUInt();
                                  
       t_gps_timeout = q->value("gps_timeout").toUInt();
+      t_init_fixed_course = q->value("init_fixed_course").toBool();
       t_init_random_coordinates = q->value("init_random_coordinates").toBool();
       t_init_random_course = q->value("init_random_course").toBool();
+      t_init_fixed_speed = q->value("init_fixed_speed").toBool();
       t_init_random_speed = q->value("init_random_speed").toBool();
       t_init_course_change_ratio = q->value("init_course_change_ratio").toUInt();
       t_init_course_change_segment = q->value("init_course_change_segment").toReal();
       t_init_speed_change_ratio = q->value("init_speed_change_ratio").toUInt();
       t_init_speed_change_segment = q->value("init_speed_change_segment").toReal();
       
+      t_navstat.name = q->value("nav_status_name").toUInt();
+      t_navstat.ITU_id = q->value("nav_status_ITU_id").toUInt();
     }
     
     q->finish();
     delete q;
     
+    ui->cbNavStatus->setCurrentIndex(ui->cbNavStatus->findData(t_navstat.ITU_id));
+    
+    ui->spinCurrentCourse->setValue(geopos->course);
+    ui->dspinCurrentSpeed->setValue(geopos->speed);
+    
   }
   
   ui->ediId->setText(showMode == smNew ? "<Новый>" : QString::number(t_vessel_id));
-//  ui-> set(t_self = false;
   ui->editCallsign->setText(t_static_callsign);
   ui->editName->setText(t_static_name);
   
@@ -101,16 +110,26 @@ SvVesselEditor::SvVesselEditor(QWidget *parent, int vesselId, bool self) :
   
 //  ui->spinGPSTimeout->setValue(t_gps_timeout);
   
+  connect(ui->cbInitCourse, SIGNAL(currentIndexChanged(int)), this, SLOT(on_courseCurrentIndexChanged(int)));
+  connect(ui->cbInitSpeed, SIGNAL(currentIndexChanged(int)), this, SLOT(on_speedCurrentIndexChanged(int)));
+  
   ui->cbInitCoordinates->setCurrentIndex(ui->cbInitCoordinates->findData(t_init_random_coordinates));
   ui->cbInitCourse->setCurrentIndex(ui->cbInitCourse->findData(t_init_random_course));
   ui->cbInitSpeed->setCurrentIndex(ui->cbInitSpeed->findData(t_init_random_speed));
   
-  ui->dspinCourseChangeSegment->setValue(t_init_course_change_ratio);
+  ui->dspinCourseChangeSegment->setValue(t_init_course_change_segment);
   ui->dspinCourseChangeSegment->setSuffix(QString(" %1").arg(CMU.DistanceDesign));
-  ui->spinCourseChangeRatio->setValue(t_init_course_change_segment);
+  ui->spinCourseChangeRatio->setValue(t_init_course_change_ratio);
+  
   ui->spinSpeedChangeRatio->setValue(t_init_speed_change_ratio);
   ui->dspinSpeedChangeSegment->setValue(t_init_speed_change_segment);
   ui->dspinSpeedChangeSegment->setSuffix(QString(" %1").arg(CMU.DistanceDesign));
+  
+  connect(ui->checkFixCurrentCourse, &QCheckBox::toggled, this, &SvVesselEditor::on_checkCourseClicked);
+  connect(ui->checkFixCurrentSpeed, &QCheckBox::toggled, this, &SvVesselEditor::on_checkSpeedClicked);
+  
+  ui->checkFixCurrentSpeed->setChecked(t_init_fixed_speed);
+  ui->checkFixCurrentCourse->setChecked(t_init_fixed_course);
   
   connect(ui->bnSave, SIGNAL(clicked()), this, SLOT(accept()));
   connect(ui->bnCancel, SIGNAL(clicked()), this, SLOT(reject()));
@@ -173,15 +192,37 @@ void SvVesselEditor::loadInitRandoms()
 {
   ui->cbInitCoordinates->clear();
   ui->cbInitCoordinates->addItem("Случайно", QVariant(true));
-  ui->cbInitCoordinates->addItem("Последние", QVariant(false));
+  ui->cbInitCoordinates->addItem("Текущие", QVariant(false));
   
   ui->cbInitCourse->clear();
   ui->cbInitCourse->addItem("Случайно", QVariant(true));
-  ui->cbInitCourse->addItem("Последние", QVariant(false));
+  ui->cbInitCourse->addItem("Текущие", QVariant(false));
   
   ui->cbInitSpeed->clear();
   ui->cbInitSpeed->addItem("Случайно", QVariant(true));
-  ui->cbInitSpeed->addItem("Последние", QVariant(false));
+  ui->cbInitSpeed->addItem("Текущие", QVariant(false));
+}
+
+void SvVesselEditor::loadNavStats()
+{
+  QSqlQuery* q = new QSqlQuery(SQLITE->db);
+  if(QSqlError::NoError != SQLITE->execSQL(QString(SQL_SELECT_NAV_STATS), q).type()) {
+    
+    q->finish();
+    return;
+  }
+  
+  while(q->next())
+    ui->cbNavStatus->addItem(q->value("status_name").toString(),
+                              q->value("ITU_id").toUInt());
+
+  q->finish();
+  delete q;
+  
+  if(ui->cbNavStatus->count()) ui->cbNavStatus->setCurrentIndex(0);
+  
+  ui->bnSave->setEnabled(!ui->cbNavStatus->currentData().isNull());
+  
 }
 
 void SvVesselEditor::accept()
@@ -217,10 +258,16 @@ void SvVesselEditor::accept()
   t_init_random_course = ui->cbInitCourse->currentData().toBool();
   t_init_random_speed = ui->cbInitSpeed->currentData().toBool();
   
+  t_init_fixed_course = ui->checkFixCurrentCourse->isChecked();
+  t_init_fixed_speed = ui->checkFixCurrentSpeed->isChecked();
+  
   t_init_course_change_ratio = ui->spinCourseChangeRatio->value();
   t_init_course_change_segment = ui->dspinCourseChangeSegment->value();
   t_init_speed_change_ratio = ui->spinSpeedChangeRatio->value();
   t_init_speed_change_segment = ui->dspinSpeedChangeSegment->value();
+  
+  t_navstat.ITU_id = ui->cbNavStatus->currentData().toInt();
+  t_navstat.name = ui->cbNavStatus->currentText();
   
   switch (this->showMode) {
     
@@ -251,7 +298,8 @@ void SvVesselEditor::accept()
                                 .arg(t_voyage_ETA_month)
                                 .arg(t_voyage_draft)
                                 .arg(t_voyage_cargo_ITU_id)
-                                .arg(t_voyage_team));
+                                .arg(t_voyage_team)
+                                .arg(t_navstat.ITU_id));
                 
           if(QSqlError::NoError != sql.type()) _exception.raise(sql.databaseText());
           
@@ -260,6 +308,8 @@ void SvVesselEditor::accept()
                                 .arg(t_init_random_coordinates)
                                 .arg(t_init_random_course)
                                 .arg(t_init_random_speed)
+                                .arg(t_init_fixed_course)
+                                .arg(t_init_fixed_speed)
                                 .arg(t_init_course_change_ratio)
                                 .arg(t_init_speed_change_ratio)
                                 .arg(t_init_course_change_segment)
@@ -290,7 +340,7 @@ void SvVesselEditor::accept()
         
         if(!SQLITE->transaction()) _exception.raise(SQLITE->db.lastError().databaseText());
         
-        QSqlError sql = SQLITE->execSQL(QString(SQL_UPDATE_AIS)
+        QSqlError sql = SQLITE->execSQL(QString(SQL_UPDATE_AIS )
                                         .arg(t_static_mmsi)
                                         .arg(t_static_imo)
                                         .arg(t_static_vessel_ITU_id)
@@ -309,6 +359,7 @@ void SvVesselEditor::accept()
                                         .arg(t_voyage_draft)
                                         .arg(t_voyage_cargo_ITU_id)
                                         .arg(t_voyage_team)
+                                        .arg(t_navstat.ITU_id)
                                         .arg(t_vessel_id));
       
         if(QSqlError::NoError != sql.type()) _exception.raise(sql.databaseText());
@@ -318,6 +369,8 @@ void SvVesselEditor::accept()
                               .arg(t_init_random_coordinates)
                               .arg(t_init_random_course)
                               .arg(t_init_random_speed)
+                              .arg(t_init_fixed_course)
+                              .arg(t_init_fixed_speed)
                               .arg(t_init_course_change_ratio)
                               .arg(t_init_speed_change_ratio)
                               .arg(t_init_course_change_segment)
@@ -348,4 +401,26 @@ void SvVesselEditor::accept()
 
   QDialog::accept();
   
+}
+
+void SvVesselEditor::on_checkCourseClicked(bool checked)
+{
+  ui->spinCourseChangeRatio->setEnabled(!checked);
+  ui->dspinCourseChangeSegment->setEnabled(!checked);
+}
+
+void SvVesselEditor::on_checkSpeedClicked(bool checked)
+{
+  ui->spinSpeedChangeRatio->setEnabled(!checked);
+  ui->dspinSpeedChangeSegment->setEnabled(!checked);  
+}
+
+void SvVesselEditor::on_courseCurrentIndexChanged(int index)
+{
+  ui->spinCurrentCourse->setEnabled(!ui->cbInitCourse->itemData(index).toBool());
+}
+
+void SvVesselEditor::on_speedCurrentIndexChanged(int index)
+{
+  ui->dspinCurrentSpeed->setEnabled(!ui->cbInitSpeed->itemData(index).toBool());
 }

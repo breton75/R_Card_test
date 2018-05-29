@@ -119,8 +119,7 @@ void gps::SvGPSEmitter::run()
     }
     
     /** вычисляем новый курс **/
-    if((_gps_params.course_change_ratio != 0) && 
-       (_gps_params.course_change_segment != 0) && 
+    if((!_gps_params.init_fixed_course) &&
        (course_segment_counter > _gps_params.course_change_segment * CMU.MetersCount)) {
       
       qsrand(QTime::currentTime().msecsSinceStartOfDay());
@@ -136,8 +135,7 @@ void gps::SvGPSEmitter::run()
     course_segment_counter += _one_tick_length;
     
     /** вычисляем новую скорость **/
-    if((_gps_params.speed_change_ratio != 0) && 
-       (_gps_params.speed_change_segment != 0) && 
+    if((_gps_params.init_fixed_speed) && 
        (speed_segment_counter > _gps_params.speed_change_segment * CMU.MetersCount)) {
       
       qsrand(QTime::currentTime().msecsSinceStartOfDay());
@@ -181,7 +179,7 @@ void gps::SvGPSEmitter::run()
 
 qreal gps::SvGPSEmitter::normalize_course(qreal course)
 {
-  qreal norm_course = course > 0 ? course % 360 : 360 - qAbs(course % 360);
+  qreal norm_course = course > 0 ? int(course) % 360 : 360 + int(course) % 360;
   return norm_course;
 }
 
