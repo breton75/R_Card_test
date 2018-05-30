@@ -6,6 +6,7 @@
 #include "geo.h"
 #include "sv_ais.h"
 #include "sql_defs.h"
+#include "sv_gps.h"
 
 #include "../../svlib/sv_sqlite.h"
 #include "../../svlib/sv_exception.h"
@@ -36,13 +37,14 @@ class SvNavStatEditor : public QDialog
 public:
   enum DoneCode { Rejected = QDialog::Rejected, Accepted = QDialog::Accepted, Error };
   
-  explicit SvNavStatEditor(QWidget *parent, const int vessel_id, const ais::aisNavStat& navstat, const geo::GEOPOSITION& gepos, const geo::BOUNDS& bounds); // const qreal speed, const qreal course);
+  explicit SvNavStatEditor(QWidget *parent, const int vessel_id, const geo::BOUNDS& bounds);
   ~SvNavStatEditor();
   
   QString last_error() { return _last_error; }
   
   ais::aisNavStat navstat() { return _navstat; }
   geo::GEOPOSITION geopos() { return _geopos; }
+  
 //  qreal speed() { return _speed; }
 //  qreal course() { return _course; }
   
@@ -54,6 +56,8 @@ private:
   ais::aisNavStat _navstat;
   geo::GEOPOSITION _geopos;
   geo::BOUNDS _bounds;
+  gps::gpsInitParams _gps_init;
+  
 //  qreal _speed;
 //  qreal _course;
   
@@ -66,7 +70,7 @@ private:
   void accept() Q_DECL_OVERRIDE;
   
 private slots:
-  void on_currentIndexChanged(int index);
+  void on_predefinedCurrentIndexChanged(int index);
   
 };
 

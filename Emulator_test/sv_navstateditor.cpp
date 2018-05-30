@@ -3,8 +3,10 @@
 
 SvNavStatEditor* NAVSTATEDITOR_UI;
 extern SvSQLITE *SQLITE;
+extern QMap<int, gps::SvGPS*>* GPSs;
+extern QMap<int, ais::SvAIS*>* AISs;
 
-SvNavStatEditor::SvNavStatEditor(QWidget *parent, const int vessel_id, const ais::aisNavStat& navstat, const geo::GEOPOSITION& gepos, const geo::BOUNDS& bounds): // const qreal speed, const qreal course) :
+SvNavStatEditor::SvNavStatEditor(QWidget *parent, const int vessel_id, const geo::BOUNDS& bounds):
   QDialog(parent),
   ui(new Ui::SvNavStatEditorDialog)
 {
@@ -14,16 +16,22 @@ SvNavStatEditor::SvNavStatEditor(QWidget *parent, const int vessel_id, const ais
   loadPredefinedPositions();
   
   _vessel_id = vessel_id;
-  _geopos = geopos();
+  _navstat = *AISs->value(vessel_id)->navStatus();
+  _geopos = AISs->value(vessel_id)->dynamicData()->geoposition;
+  _gps_init = GPSs->value(vessel_id)->initParams();
+  
   _bounds = bounds;
   
-  ui->cbNavStatus->setCurrentIndex(ui->cbNavStatus->findData(navstat.ITU_id));
+  ui->cbNavStatus->setCurrentIndex(ui->cbNavStatus->findData(_navstat.ITU_id));
   ui->spinCourse->setValue(int(_geopos.course));
   ui->dspinSpeed->setValue(_geopos.speed);
   ui->dspinLatitude->setValue(_geopos.latitude);
   ui->dspinLongtitude->setValue(_geopos.longtitude);
+  
+  ui->checkCourse->setChecked(GPSs->value(vessel_id)->initParams().init_fixed_course);
+  ui->checkSpeed->setChecked(GPSs->value(vessel_id)->initParams().init_fixed_speed);
     
-  connect(ui->cbPredefinedPosition, SIGNAL(currentIndexChanged(int)), this, SLOT(on_currentIndexChanged(int)));
+  connect(ui->cbPredefinedPosition, SIGNAL(currentIndexChanged(int)), this, SLOT(on_predefinedCurrentIndexChanged(int)));
   connect(ui->bnSave, SIGNAL(clicked()), this, SLOT(accept()));
   connect(ui->bnCancel, SIGNAL(clicked()), this, SLOT(reject()));
   
@@ -73,8 +81,9 @@ void SvNavStatEditor::loadPredefinedPositions()
   
 }
 
-void SvNavStatEditor::on_currentIndexChanged(int index)
+void SvNavStatEditor::on_predefinedCurrentIndexChanged(int index)
 {
+
   switch (ui->cbPredefinedPosition->itemData(index).toInt()) {
     
     case ppiBottom:
@@ -132,6 +141,9 @@ void SvNavStatEditor::accept()
   _geopos.course = ui->spinCourse->value();
   _geopos.latitude = ui->dspinLatitude->value();
   _geopos.longtitude = ui->dspinLongtitude->value();
+
+  _gps_init.init_fixed_course = ui->checkCourse->isChecked();
+  _gps_init.init_fixed_speed = ui->checkSpeed->isChecked();
   
   try {
 
@@ -157,6 +169,15 @@ void SvNavStatEditor::accept()
       
       if(!SQLITE->commit()) _exception.raise(SQLITE->db.lastError().databaseText());
   
+      
+      AISs->value(_vessel_id)->setCourse(_geopos.course);
+      AISs->value(_vessel_id)->setSpeed(_geopos.speed);
+      AISs->value(_vessel_id)->setLatitude(_geopos.latitude);
+      AISs->value(_vessel_id)->setLongtitude(_geopos.longtitude);
+      AISs->value(_vessel_id)->setNavStatus(_navstat);
+      
+      GPSs->value(_vessel_id)->setInitParams(_gps_init);
+      
       QDialog::done(Accepted);
       
   }
@@ -168,6 +189,5 @@ void SvNavStatEditor::accept()
     QDialog::done(Error);
 //    qDebug() << _last_error;
   }
-  
   
 }

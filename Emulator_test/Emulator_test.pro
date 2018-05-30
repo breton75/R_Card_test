@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Emulator_test
 TEMPLATE = app
 
-VERSION = 0.9.3    # major.minor.patch
+VERSION = 0.9.4    # major.minor.patch
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 # The following define makes your compiler emit warnings if you use

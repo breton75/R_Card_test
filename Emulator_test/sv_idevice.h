@@ -40,11 +40,19 @@ namespace idev {
     }
     
     int protocol = QAbstractSocket::UdpSocket;
-    quint32 ip = QHostAddress::Broadcast;
+    quint32 ip = 0;
     quint32 ifc;
     quint16 port = 30000;
     SvSimulatedDeviceTypes dev_type;
     QString description = "";
+    QHostAddress::SpecialAddress translate_type = QHostAddress::Broadcast;
+    
+    static QMap<QHostAddress::SpecialAddress, QString> TranslateTypes() { return {
+      {QHostAddress::Null, "Заданный IP адрес"},
+      {QHostAddress::LocalHost, "localhost"},
+      {QHostAddress::Any, "Any"},
+      {QHostAddress::Broadcast, "Broadcast"}};
+                                                                        }
   };
   
   class SvIDevice;
@@ -144,6 +152,9 @@ public:
     if(_params.protocol == QAbstractSocket::UdpSocket) {
     
       _udp = new QUdpSocket();
+      _log << svlog::Info << svlog::Time << QString("UDP translation started (%1:%2)")
+              .arg(_params.translate_type == QHostAddress::Null ? QHostAddress(_params.ip).toString() : idev::NetworkParams::TranslateTypes().value(_params.translate_type))
+              .arg(_params.port) << svlog::endl;
   
     }
     else {
@@ -172,7 +183,10 @@ public:
   {
     disconnect(this, &SvINetworkDevice::newPacket, this, &SvINetworkDevice::write);
     
-    if(_udp) delete _udp;
+    if(_udp) {
+      delete _udp;
+      _log << svlog::Info << svlog::Time << QString("UDP translation stopped (%1)").arg(_params.port) << svlog::endl;
+    }
     _udp = nullptr;
     
     if(_tcp) delete _tcp;
@@ -199,7 +213,16 @@ private slots:
       
       if(_udp) {
         
-        _udp->writeDatagram(packet, QHostAddress::Broadcast, _params.port);
+        switch (_params.translate_type) {
+          
+          case QHostAddress::Null:
+            _udp->writeDatagram(packet, QHostAddress(_params.ip), _params.port);
+            break;
+            
+          default:
+            _udp->writeDatagram(packet, _params.translate_type, _params.port);
+            break;
+        }
       }
 
       else if(_tcp) 

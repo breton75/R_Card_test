@@ -61,7 +61,7 @@ public:
   int vesselId() { return _vessel_id; }
   
   void setInitParams(gps::gpsInitParams &params) { _gps_params = params; _current_geo_position = params.geoposition; }
-  gps::gpsInitParams initParams() { return _gps_params; }
+  gps::gpsInitParams& initParams() { return _gps_params; }
   
   idev::SvSimulatedDeviceTypes type() const { return idev::sdtGPS; }
     

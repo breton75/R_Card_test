@@ -19,6 +19,8 @@ SvVesselEditor::SvVesselEditor(QWidget *parent, int vesselId, geo::GEOPOSITION *
   loadNavStats();
   
   t_self = self;
+  t_geopos.course = geopos->course;
+  t_geopos.speed = geopos->speed;
   
   if(showMode == smEdit) {
     
@@ -268,6 +270,9 @@ void SvVesselEditor::accept()
   
   t_navstat.ITU_id = ui->cbNavStatus->currentData().toInt();
   t_navstat.name = ui->cbNavStatus->currentText();
+  
+  t_geopos.course = ui->spinCurrentCourse->value();
+  t_geopos.speed = ui->dspinCurrentSpeed->value();
   
   switch (this->showMode) {
     

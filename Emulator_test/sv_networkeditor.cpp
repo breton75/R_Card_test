@@ -23,12 +23,20 @@ SvNetworkEditor::SvNetworkEditor(idev::NetworkParams params, QWidget *parent) :
   ui->cbProtocol->addItem("UDP", QAbstractSocket::UdpSocket);
   ui->cbProtocol->addItem("TCP", QAbstractSocket::TcpSocket);
   
+  ui->cbTranslateType->clear();
+  for(QHostAddress::SpecialAddress key: idev::NetworkParams::TranslateTypes().keys())
+    ui->cbTranslateType->addItem(idev::NetworkParams::TranslateTypes().value(key), key);
+  
+  connect(ui->cbProtocol, SIGNAL(currentIndexChanged(int)), this, SLOT(on_cbProtocolCurrentIndexChanged(int)));
+  connect(ui->cbTranslateType, SIGNAL(currentIndexChanged(int)), this, SLOT(on_cbTranslateCurrentIndexChanged(int)));
+  
   ui->cbInterface->setCurrentIndex(ui->cbInterface->findData(params.ifc));
   ui->cbProtocol->setCurrentIndex(ui->cbProtocol->findData(params.protocol));
+  ui->cbTranslateType->setCurrentIndex(ui->cbTranslateType->findData(params.translate_type));
   ui->editIP->setText(QHostAddress(params.ip).toString());  
   ui->spinPort->setValue(params.port);
   
-  ui->lblCaption->setText(QString("Настройки порта для устройства: Эхолот"));
+  ui->lblCaption->setText(QString("Настройки порта для устройства: "));
   
   
   
@@ -50,10 +58,28 @@ void SvNetworkEditor::accept()
   params.protocol = ui->cbProtocol->currentData().toInt();
   params.ip = QHostAddress(ui->editIP->text().trimmed()).toIPv4Address();
   params.port = ui->spinPort->value();
-  params.description = QString("%1:%2:%3 (%4)")
+  
+  if(params.protocol == QAbstractSocket::TcpSocket)
+    
+    params.description = QString("%1:%2 (%3)")
                        .arg(ui->cbProtocol->currentText())
-                       .arg(QHostAddress(params.ip).toString()).arg(params.port)
+                       .arg(params.port)
                        .arg(QNetworkInterface::interfaceFromIndex(params.ifc).humanReadableName());
+  
+  else {
+    
+    QHostAddress::SpecialAddress tt = QHostAddress::SpecialAddress(ui->cbTranslateType->currentData().toInt());
+    
+    params.description = QString("%1:%2:%3 (%4)")
+                       .arg(ui->cbProtocol->currentText())
+                       .arg(tt == QHostAddress::Null ?
+                              QHostAddress(params.ip).toString() : idev::NetworkParams::TranslateTypes().value(tt))
+                       .arg(params.port)
+                       .arg(QNetworkInterface::interfaceFromIndex(params.ifc).humanReadableName());    
+    
+  }
+  
+  params.translate_type = QHostAddress::SpecialAddress(ui->cbTranslateType->currentData().toInt());
   
   try {
     
@@ -66,6 +92,7 @@ void SvNetworkEditor::accept()
                           .arg(params.ip)
                           .arg(params.port)
                           .arg(params.description)
+                          .arg(params.translate_type)
                           .arg(params.dev_type));
     
     if(QSqlError::NoError != err.type()) _exception.raise(err.databaseText());
@@ -101,4 +128,17 @@ QSqlError SvNetworkEditor::check_params_exists(idev::SvSimulatedDeviceTypes dev_
 
   return err;
   
+}
+
+void SvNetworkEditor::on_cbProtocolCurrentIndexChanged(int index)
+{
+  ui->cbTranslateType->setEnabled(ui->cbProtocol->itemData(index).toInt() == int(QAbstractSocket::UdpSocket));
+  
+  ui->editIP->setEnabled(ui->cbTranslateType->isEnabled() &&
+                         ui->cbTranslateType->currentData().toInt() == int(QHostAddress::Null));
+}
+
+void SvNetworkEditor::on_cbTranslateCurrentIndexChanged(int index)
+{
+  ui->editIP->setEnabled(ui->cbTranslateType->itemData(index).toInt() == int(QHostAddress::Null));
 }

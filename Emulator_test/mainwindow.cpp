@@ -497,10 +497,10 @@ bool MainWindow::read_devices_params()
           
           _echo_multi_network_params.ifc = q->value("network_interface").toUInt();
           _echo_multi_network_params.protocol = q->value("network_protocol").toUInt();
-          
           _echo_multi_network_params.ip = q->value("network_ip").toUInt();
           _echo_multi_network_params.port = q->value("network_port").toUInt();
           _echo_multi_network_params.description = q->value("description").toString();
+          _echo_multi_network_params.translate_type = QHostAddress::SpecialAddress(q->value("network_translation_type").toInt());
           
           ui->editECHOMultiInterface->setText(_echo_multi_network_params.description);
           ui->checkECHOMultiEnabled->setChecked(q->value("is_active").toBool());
@@ -518,10 +518,10 @@ bool MainWindow::read_devices_params()
           
           _echo_fish_network_params.ifc = q->value("network_interface").toUInt();
           _echo_fish_network_params.protocol = q->value("network_protocol").toUInt();
-          
           _echo_fish_network_params.ip = q->value("network_ip").toUInt();
           _echo_fish_network_params.port = q->value("network_port").toUInt();
           _echo_fish_network_params.description = q->value("description").toString();
+          _echo_fish_network_params.translate_type = QHostAddress::SpecialAddress(q->value("network_translation_type").toInt());
 
           ui->editECHOFishInterface->setText(_echo_fish_network_params.description);
           ui->checkECHOFishEnabled->setChecked(q->value("is_active").toBool());
@@ -537,10 +537,10 @@ bool MainWindow::read_devices_params()
           
           _gps_network_params.ifc = q->value("network_interface").toUInt();
           _gps_network_params.protocol = q->value("network_protocol").toUInt();
-          
           _gps_network_params.ip = q->value("network_ip").toUInt();
           _gps_network_params.port = q->value("network_port").toUInt();
           _gps_network_params.description = q->value("description").toString();
+          _gps_network_params.translate_type = QHostAddress::SpecialAddress(q->value("network_translation_type").toInt());
 
           ui->editGPSInterface->setText(_gps_network_params.description);
           ui->checkGPSEnabled->setChecked(q->value("is_active").toBool());
@@ -1067,7 +1067,7 @@ void MainWindow::on_listVessels_doubleClicked(const QModelIndex &index)
   switch (_current_state) {
     case sStopped:
       
-      editVessel(LISTITEMs->key(ui->listVessels->item(index.row())));
+      editVesselNavStat(LISTITEMs->key(ui->listVessels->item(index.row())));
       break;
       
     case sRunned: {
@@ -1083,6 +1083,8 @@ void MainWindow::on_listVessels_doubleClicked(const QModelIndex &index)
       
       if(selobj)      
         _area->centerSelected();
+      
+      editVesselNavStat(LISTITEMs->key(ui->listVessels->item(index.row())));
       
       break;
       
@@ -1109,7 +1111,6 @@ void MainWindow::editVessel(int id)
   geo::GEOPOSITION g = VESSELEDITOR_UI->t_geopos;
   
   delete VESSELEDITOR_UI;
-    
   
   /** ------ читаем информацию о судне --------- **/
   QSqlQuery* q = new QSqlQuery(SQLITE->db);
@@ -1155,6 +1156,30 @@ void MainWindow::editVessel(int id)
   
   LISTITEMs->value(id)->setText(QString("%1\t%2").arg(id).arg(static_voyage_data.name));
 
+}
+
+void MainWindow::editVesselNavStat(int id)
+{
+  NAVSTATEDITOR_UI = new SvNavStatEditor(0, id, _bounds);
+
+  switch (NAVSTATEDITOR_UI->exec()) {
+    
+    case SvNavStatEditor::Error:
+      
+      log << svlog::Time << svlog::Critical 
+          << QString("Ошибка при редактировании записи:\n%1").arg(NAVSTATEDITOR_UI->last_error())
+          << svlog::endl;
+      break;
+      
+    case SvNavStatEditor::Accepted:
+
+      VESSELs->value(id)->updateVessel();
+      
+      break;
+  }
+  
+  delete NAVSTATEDITOR_UI;
+  
 }
 
 void MainWindow::on_updateMapObjectInfo(SvMapObject* mapObject)
@@ -1490,6 +1515,7 @@ void MainWindow::on_bnECHOMultiEditNetworkParams_clicked()
   _echo_multi_network_params.ip = NETWORKEDITOR_UI->params.ip;
   _echo_multi_network_params.port = NETWORKEDITOR_UI->params.port;
   _echo_multi_network_params.description = NETWORKEDITOR_UI->params.description;
+  _echo_multi_network_params.translate_type = NETWORKEDITOR_UI->params.translate_type;
   
   delete NETWORKEDITOR_UI;
 
@@ -1516,6 +1542,7 @@ void MainWindow::on_bnECHOFishEditNetworkParams_clicked()
   _echo_fish_network_params.ip = NETWORKEDITOR_UI->params.ip;
   _echo_fish_network_params.port = NETWORKEDITOR_UI->params.port;
   _echo_fish_network_params.description = NETWORKEDITOR_UI->params.description;
+  _echo_fish_network_params.translate_type = NETWORKEDITOR_UI->params.translate_type;
   
   delete NETWORKEDITOR_UI;
 
@@ -1542,6 +1569,7 @@ void MainWindow::on_bnGPSEditNetworkParams_clicked()
   _gps_network_params.ip = NETWORKEDITOR_UI->params.ip;
   _gps_network_params.port = NETWORKEDITOR_UI->params.port;
   _gps_network_params.description = NETWORKEDITOR_UI->params.description;
+  _gps_network_params.translate_type = NETWORKEDITOR_UI->params.translate_type;
   
   delete NETWORKEDITOR_UI;
 
@@ -1589,15 +1617,23 @@ void MainWindow::stateChanged(States state)
       ui->checkAISEnabled->setEnabled(false);
       ui->checkLAGEnabled->setEnabled(false);
       ui->checkNAVTEXEnabled->setEnabled(false);
+      ui->checkECHOFishEnabled->setEnabled(false);
+      ui->checkECHOMultiEnabled->setEnabled(false);
+      ui->checkGPSEnabled->setEnabled(false);
+      
       ui->bnAISEditSerialParams->setEnabled(false);
       ui->bnLAGEditSerialParams->setEnabled(false);
       ui->bnNAVTEXEditSerialParams->setEnabled(false);
+      ui->bnECHOFishEditNetworkParams->setEnabled(false);
+      ui->bnECHOMultiEditNetworkParams->setEnabled(false);
+      ui->bnGPSEditNetworkParams->setEnabled(false);
       
       ui->gbAISParams->setEnabled(false);
       ui->gbLAGParams->setEnabled(false);
       ui->gbNAVTEXParams->setEnabled(false);
       ui->gbECHOMultiParams->setEnabled(false);
       ui->gbECHOFishParams->setEnabled(false);
+      ui->gbGPSParams->setEnabled(false);
       
       ui->bnAddVessel->setEnabled(false);
       ui->bnEditVessel->setEnabled(false);
@@ -1622,15 +1658,23 @@ void MainWindow::stateChanged(States state)
       ui->checkAISEnabled->setEnabled(true);
       ui->checkLAGEnabled->setEnabled(true);
       ui->checkNAVTEXEnabled->setEnabled(true);
+      ui->checkECHOFishEnabled->setEnabled(true);
+      ui->checkECHOMultiEnabled->setEnabled(true);
+      ui->checkGPSEnabled->setEnabled(true);
+      
       ui->bnAISEditSerialParams->setEnabled(true);
       ui->bnLAGEditSerialParams->setEnabled(true);
       ui->bnNAVTEXEditSerialParams->setEnabled(true);
+      ui->bnECHOFishEditNetworkParams->setEnabled(true);
+      ui->bnECHOMultiEditNetworkParams->setEnabled(true);
+      ui->bnGPSEditNetworkParams->setEnabled(true);
       
       ui->gbAISParams->setEnabled(true);
       ui->gbLAGParams->setEnabled(true);
       ui->gbNAVTEXParams->setEnabled(true);
       ui->gbECHOMultiParams->setEnabled(true);
       ui->gbECHOFishParams->setEnabled(true);
+      ui->gbGPSParams->setEnabled(true);
       
       ui->bnAddVessel->setEnabled(true);
       ui->bnEditVessel->setEnabled(true);
@@ -2013,34 +2057,6 @@ void MainWindow::on_bnSetActive_clicked()
 
 void MainWindow::on_actionNavStat_triggered()
 {
-  ais::aisNavStat navstat = *(VESSELs->value(_selected_vessel_id)->ais()->navStatus());
-  qreal speed = VESSELs->value(_selected_vessel_id)->ais()->dynamicData()->geoposition.speed;
-  qreal course = VESSELs->value(_selected_vessel_id)->ais()->dynamicData()->geoposition.course;
-  
-  NAVSTATEDITOR_UI = new SvNavStatEditor(0, _selected_vessel_id, navstat, _self_ais->dynamicData()->geoposition, _bounds); // speed, course);
-
-  switch (NAVSTATEDITOR_UI->exec()) {
-    
-    case SvNavStatEditor::Error:
-      
-      log << svlog::Time << svlog::Critical 
-          << QString("Ошибка при редактировании записи:\n%1").arg(NAVSTATEDITOR_UI->last_error())
-          << svlog::endl;
-      break;
-      
-    case SvNavStatEditor::Accepted:
-      
-      VESSELs->value(_selected_vessel_id)->ais()->setNavStatus(NAVSTATEDITOR_UI->navstat());
-      VESSELs->value(_selected_vessel_id)->ais()->setCourse(NAVSTATEDITOR_UI->geopos().latitude);
-      VESSELs->value(_selected_vessel_id)->ais()->setCourse(NAVSTATEDITOR_UI->geopos().longtitude);
-      VESSELs->value(_selected_vessel_id)->ais()->setCourse(NAVSTATEDITOR_UI->geopos().course);
-      VESSELs->value(_selected_vessel_id)->ais()->setSpeed(NAVSTATEDITOR_UI->geopos().speed);
-      
-      VESSELs->value(_selected_vessel_id)->updateVessel();
-      
-      break;
-  }
-  
-  delete NAVSTATEDITOR_UI;
+  editVesselNavStat(_selected_vessel_id);
 }
 

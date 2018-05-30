@@ -82,6 +82,7 @@ namespace geo {
       latitude = other.latitude; longtitude = other.longtitude; 
       course = other.course; speed = other.speed; utc = other.utc;
       accuracy = other.accuracy; full_distance = other.full_distance;
+      return *this;
     }
     
   };

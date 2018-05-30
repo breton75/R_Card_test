@@ -106,6 +106,18 @@
            <string>GPS</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_28">
+           <property name="leftMargin">
+            <number>2</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>2</number>
+           </property>
+           <property name="bottomMargin">
+            <number>2</number>
+           </property>
            <item>
             <widget class="QToolBox" name="toolBoxLAG_2">
              <property name="currentIndex">
@@ -116,8 +128,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>353</width>
-                <height>454</height>
+                <width>367</width>
+                <height>468</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1892,7 +1904,7 @@ color: rgb(0, 0, 127);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>98</width>
+                <width>83</width>
                 <height>111</height>
                </rect>
               </property>

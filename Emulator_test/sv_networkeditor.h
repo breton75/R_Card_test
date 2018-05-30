@@ -28,6 +28,10 @@ public:
   
   QString last_error() { return _last_error; }
     
+private slots:
+  void on_cbProtocolCurrentIndexChanged(int index);
+  void on_cbTranslateCurrentIndexChanged(int index);
+  
 private:
   Ui::SvNetworkEditorDialog *ui;
   

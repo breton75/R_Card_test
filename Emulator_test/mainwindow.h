@@ -118,6 +118,7 @@ private:
     
 private slots:
     void editVessel(int id);
+    void editVesselNavStat(int id);
     
     void on_updateMapObjectInfo(SvMapObject* mapObject);
     void on_updateVesselById(int id);
