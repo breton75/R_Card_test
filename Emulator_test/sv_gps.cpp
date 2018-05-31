@@ -24,6 +24,24 @@ gps::SvGPS::~SvGPS()
   deleteLater();
 }
   
+void gps::SvGPS::setInitParams(gps::gpsInitParams &params)
+{ 
+  _mutex.lock();
+  
+  _gps_params = params;
+  _current_geo_position = params.geoposition;
+  
+  _mutex.unlock();
+  
+//  if(_gps_emitter) {
+//    qDebug() << _gps_params.geoposition.latitude << _gps_params.geoposition.course;
+//    _gps_emitter->setInitParams(params);
+    
+//    if(_vessel_id == 9)
+//      qDebug() << _gps_params.geoposition.latitude << _gps_params.geoposition.course;
+//  }
+}
+
 bool gps::SvGPS::open()
 {
   _isOpened = true;
@@ -41,12 +59,12 @@ bool gps::SvGPS::start(quint32 msecs)
   if(_gps_emitter) 
     delete _gps_emitter;
   
-  _gps_emitter = new gps::SvGPSEmitter(_vessel_id, _gps_params, _bounds, _multiplier);
+  _gps_emitter = new gps::SvGPSEmitter(_vessel_id, &_gps_params, &_current_geo_position, _bounds, _multiplier, &_mutex);
   connect(_gps_emitter, &gps::SvGPSEmitter::finished, _gps_emitter, &gps::SvGPSEmitter::deleteLater);
   connect(_gps_emitter, &gps::SvGPSEmitter::newGPSData, this, &SvGPS::on_newGPSData);
-  connect(_gps_emitter, SIGNAL(passed1m(geo::GEOPOSITION)), this, SIGNAL(passed1m(geo::GEOPOSITION)));
+//  connect(_gps_emitter, SIGNAL(passed1m(geo::GEOPOSITION)), this, SIGNAL(passed1m(geo::GEOPOSITION)));
+  connect(_gps_emitter, &gps::SvGPSEmitter::passed1m, this, &SvGPS::on_passed1m);
   _gps_emitter->start();
-                 
   
 }
 
@@ -59,25 +77,32 @@ void gps::SvGPS::stop()
   
 }
 
-void gps::SvGPS::on_newGPSData(const geo::GEOPOSITION &geopos)
+void gps::SvGPS::on_newGPSData()
 {
-  _current_geo_position = geopos;
+//  _current_geo_position = geopos;
   emit newGPSData(_current_geo_position);
 }
+void gps::SvGPS::on_passed1m()
+{
+  emit passed1m(_current_geo_position);
+}
+
 
 /** ******  EMITTER  ****** **/
-gps::SvGPSEmitter::SvGPSEmitter(int vessel_id, gps::gpsInitParams& params, geo::BOUNDS& bounds, quint32 multiplier)
+gps::SvGPSEmitter::SvGPSEmitter(int vessel_id, gps::gpsInitParams* params, geo::GEOPOSITION* geopos, geo::BOUNDS& bounds, quint32 multiplier, QMutex* mutex)
 {
   _vessel_id = vessel_id;
-  _gps_params = params;
   _bounds = bounds;
   _multiplier = multiplier;
-  
-  _current_geo_position = _gps_params.geoposition;
 
+  _gps_params = params; 
+  _current_geo_position = geopos;
+  
   // длина пути в метрах, за один отсчет таймера // скорость в узлах. 1 узел = 1852 метра в час
-  _one_tick_length = _current_geo_position.speed * CMU.MetersCount / 3600.0 / (1000.0 / CLOCK /*qreal(_gps_params.gps_timeout)*/) * _multiplier;
-//  qDebug() << _one_tick_length << _current_geo_position.speed;
+  _one_tick_length = _current_geo_position->speed * CMU.MetersCount / 3600.0 / (1000.0 / CLOCK /*qreal(_gps_params.gps_timeout)*/) * _multiplier;
+  
+  _mutex = mutex;
+  
 }
 
 gps::SvGPSEmitter::~SvGPSEmitter()
@@ -85,6 +110,19 @@ gps::SvGPSEmitter::~SvGPSEmitter()
   stop();
   deleteLater();  
 }
+
+//void gps::SvGPSEmitter::setInitParams(gps::gpsInitParams *params, geo::GEOPOSITION* geopos)
+//{ 
+////  _mutex.lock();
+  
+//  _gps_params = params; 
+//  _current_geo_position = &(params->geoposition);
+  
+//  // длина пути в метрах, за один отсчет таймера // скорость в узлах. 1 узел = 1852 метра в час
+//  _one_tick_length = _current_geo_position.speed * CMU.MetersCount / 3600.0 / (1000.0 / CLOCK /*qreal(_gps_params.gps_timeout)*/) * _multiplier;
+
+////  _mutex.unlock();
+//}
 
 void gps::SvGPSEmitter::stop()
 {
@@ -107,27 +145,30 @@ void gps::SvGPSEmitter::run()
   while(_started) {
     
     if(QTime::currentTime().msecsSinceStartOfDay() - calc_timer < CLOCK /*_gps_params.gps_timeout*/) {
+//      _mutex.unlock(); // обязательно разлочиваем, а то получается livelock
       usleep(100); // чтоб не грузило систему
       continue;
     }
     
     calc_timer = QTime::currentTime().msecsSinceStartOfDay() - 1;
     
-    if(QTime::currentTime().msecsSinceStartOfDay() - emit_timer >= _gps_params.gps_timeout) {
-      emit newGPSData(_current_geo_position);
+    if(QTime::currentTime().msecsSinceStartOfDay() - emit_timer >= _gps_params->gps_timeout) {
+      emit newGPSData(/*_current_geo_position*/);
       emit_timer = QTime::currentTime().msecsSinceStartOfDay();
     }
     
+   _mutex->lock();
+   
     /** вычисляем новый курс **/
-    if((!_gps_params.init_fixed_course) &&
-       (course_segment_counter > _gps_params.course_change_segment * CMU.MetersCount)) {
+    if((!_gps_params->init_fixed_course) &&
+       (course_segment_counter > _gps_params->course_change_segment * CMU.MetersCount)) {
       
       qsrand(QTime::currentTime().msecsSinceStartOfDay());
-      int a = qrand() % _gps_params.course_change_ratio;
+      int a = qrand() % _gps_params->course_change_ratio;
       int b = -1 + (2 * (qrand() % 2));
       
       // нормируем курс, чтобы он вписывался в диапазон 0 - 360 градусов
-      _current_geo_position.course = normalize_course(_current_geo_position.course + a * b);
+      _current_geo_position->setCourse(normalize_course(_current_geo_position->course + a * b));
 
       course_segment_counter = -_one_tick_length;
       
@@ -135,14 +176,14 @@ void gps::SvGPSEmitter::run()
     course_segment_counter += _one_tick_length;
     
     /** вычисляем новую скорость **/
-    if((_gps_params.init_fixed_speed) && 
-       (speed_segment_counter > _gps_params.speed_change_segment * CMU.MetersCount)) {
+    if((!_gps_params->init_fixed_speed) && 
+       (speed_segment_counter > _gps_params->speed_change_segment * CMU.MetersCount)) {
       
       qsrand(QTime::currentTime().msecsSinceStartOfDay());
-      int a = _current_geo_position.speed * (qreal(qrand() % _gps_params.speed_change_ratio) / 100.0);
-      int b = (_current_geo_position.speed + a) > 30 ? -1 : -1 + (2 * (qrand() % 2));
+      int a = _current_geo_position->speed * (qreal(qrand() % _gps_params->speed_change_ratio) / 100.0);
+      int b = (_current_geo_position->speed + a) > 30 ? -1 : -1 + (2 * (qrand() % 2));
       
-      _current_geo_position.speed += a * b;
+      _current_geo_position->setSpeed(_current_geo_position->speed + a * b);
       
       speed_segment_counter = -_one_tick_length;
       
@@ -150,26 +191,32 @@ void gps::SvGPSEmitter::run()
     speed_segment_counter += _one_tick_length;
     
     
-    _current_geo_position.utc = QDateTime::currentDateTimeUtc();
+    _current_geo_position->setUTC(QDateTime::currentDateTimeUtc());
     
-    geo::GEOPOSITION new_geopos = geo::get_next_geoposition(_current_geo_position, _one_tick_length);
+    geo::GEOPOSITION new_geopos = geo::get_next_coordinates(*_current_geo_position, _one_tick_length);
     
     // если новая координата выходит за границу карты, то меняем курс и вычисляем новые координаты
     if(!geo::geoposition_within_bounds(new_geopos, _bounds)) {
-      _current_geo_position.course = normalize_course(_current_geo_position.course + quint64(geo::get_rnd_course()) % 45);
+      _current_geo_position->setCourse(normalize_course(_current_geo_position->course + quint64(geo::get_rnd_course()) % 45));
+      _mutex->unlock();
       continue;
     }
     
-//    if(_vessel_id == 6) {
-      if(pass1m_segment_counter >= 1.0) {
-        emit passed1m(new_geopos);
-        pass1m_segment_counter = 0.0;
-      }
-      else {
-        pass1m_segment_counter += _one_tick_length;
-      }
+    _current_geo_position->setLongtitude(new_geopos.longtitude);
+    _current_geo_position->setLatitude(new_geopos.latitude);
+    _current_geo_position->setDistance(new_geopos.full_distance);
     
-    _current_geo_position = new_geopos;
+    if(pass1m_segment_counter >= 1.0) {
+      emit passed1m(/*new_geopos*/);
+      pass1m_segment_counter = 0.0;
+    }
+    else {
+      pass1m_segment_counter += _one_tick_length;
+    }
+    
+//    _current_geo_position = new_geopos;
+    
+    _mutex->unlock();
     
   }
   

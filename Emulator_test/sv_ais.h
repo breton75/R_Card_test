@@ -136,7 +136,8 @@ public:
   ais::aisStaticVoyageData  *staticVoyageData() { return &_static_voyage_data; }
   ais::aisDynamicData *dynamicData() { return &_dynamic_data; }
   
-//  idev::SvSimulatedDeviceTypes type();
+  QString lastDescription() { return _last_description; }
+  void setLastDescription(QString& html) { _last_description = html; }
     
   virtual bool open() = 0;
   virtual void close() = 0;
@@ -156,6 +157,8 @@ private:
   ais::aisNavStat _nav_status;
   
   QDateTime _last_update;
+  
+  QString _last_description = "";
   
 //public slots:
 //  void newGPSData(const geo::GEOPOSITION& geopos);

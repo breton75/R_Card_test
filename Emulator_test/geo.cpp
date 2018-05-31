@@ -66,19 +66,19 @@ bool geo::geoposition_within_bounds(const geo::GEOPOSITION& geopos, const geo::B
           (geopos.latitude <= bounds.max_lat));
 }
 
-qreal geo::get_rnd_course(int diff)
+qreal geo::get_rnd_course(int rndinit)
 {
-  qsrand(QTime::currentTime().msec() + diff);
+  qsrand(QTime::currentTime().msec() + rndinit);
   return qreal(qrand() % 360);
 }
 
-qreal geo::get_rnd_speed(int diff)
+qreal geo::get_rnd_speed(int rndinit)
 {
-  qsrand(QTime::currentTime().msec() + diff);
+  qsrand(QTime::currentTime().msec() + rndinit);
   return qreal(qrand() % 30); // максимальная скорость 30 узлов
 }
 
-geo::COORDINATES geo::get_rnd_coordinates(const BOUNDS &bounds, int diff)
+geo::COORDINATES geo::get_rnd_coordinates(const BOUNDS &bounds, int rndinit)
 {
   geo::COORDINATES result;
   
@@ -86,7 +86,7 @@ geo::COORDINATES geo::get_rnd_coordinates(const BOUNDS &bounds, int diff)
   qreal lon_diff = bounds.max_lon - bounds.min_lon;
   
 //  QTime t = QTime::currentTime();
-  qsrand(QTime::currentTime().msec() + diff); // secsTo(QTime::currentTime()));
+  qsrand(QTime::currentTime().msec() + rndinit); // secsTo(QTime::currentTime()));
   qreal r1 = qreal(qrand() % 100) / 100.0;
 
   result.latitude = bounds.min_lat + r1 * lat_diff;
@@ -100,22 +100,22 @@ geo::COORDINATES geo::get_rnd_coordinates(const BOUNDS &bounds, int diff)
   
 }
 
-geo::GEOPOSITION geo::get_rnd_position(const geo::BOUNDS& bounds, int diff)
+geo::GEOPOSITION geo::get_rnd_position(const geo::BOUNDS& bounds, int rndinit)
 {
   geo::GEOPOSITION result;
   
-  geo::COORDINATES coord = get_rnd_coordinates(bounds, diff);
+  geo::COORDINATES coord = get_rnd_coordinates(bounds, rndinit);
   
   result.latitude = coord.latitude;
   result.longtitude = coord.longtitude;
-  result.course = get_rnd_course(diff);
-  result.speed = get_rnd_speed(diff);
+  result.course = get_rnd_course(rndinit);
+  result.speed = get_rnd_speed(rndinit);
   
   return result;
   
 }
 
-geo::GEOPOSITION geo::get_next_geoposition(const geo::GEOPOSITION& geopos, qreal distance)
+geo::GEOPOSITION geo::get_next_coordinates(const geo::GEOPOSITION& geopos, qreal distance)
 {
   /** http://www.movable-type.co.uk/scripts/latlong.html **/
   qreal dr = distance / EARTH_RADIUS;

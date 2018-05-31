@@ -142,6 +142,7 @@ void SvNavStatEditor::accept()
   _geopos.latitude = ui->dspinLatitude->value();
   _geopos.longtitude = ui->dspinLongtitude->value();
 
+  _gps_init.geoposition = _geopos;
   _gps_init.init_fixed_course = ui->checkCourse->isChecked();
   _gps_init.init_fixed_speed = ui->checkSpeed->isChecked();
   
@@ -169,6 +170,7 @@ void SvNavStatEditor::accept()
       
       if(!SQLITE->commit()) _exception.raise(SQLITE->db.lastError().databaseText());
   
+      GPSs->value(_vessel_id)->setInitParams(_gps_init);
       
       AISs->value(_vessel_id)->setCourse(_geopos.course);
       AISs->value(_vessel_id)->setSpeed(_geopos.speed);
@@ -176,7 +178,6 @@ void SvNavStatEditor::accept()
       AISs->value(_vessel_id)->setLongtitude(_geopos.longtitude);
       AISs->value(_vessel_id)->setNavStatus(_navstat);
       
-      GPSs->value(_vessel_id)->setInitParams(_gps_init);
       
       QDialog::done(Accepted);
       

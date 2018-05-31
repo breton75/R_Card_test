@@ -99,7 +99,7 @@
           </font>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="tabGPS">
           <attribute name="title">
@@ -917,9 +917,6 @@ color: rgb(0, 0, 127);</string>
                   </item>
                   <item>
                    <widget class="QPushButton" name="bnDropDynamicData">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                       <horstretch>0</horstretch>

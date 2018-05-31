@@ -85,6 +85,13 @@ namespace geo {
       return *this;
     }
     
+    void setCourse(qreal course) { this->course = course; }
+    void setSpeed(qreal speed) { this->speed = speed; }
+    void setLongtitude(qreal longtitude) { this->longtitude = longtitude; }
+    void setLatitude(qreal latitude) { this->latitude = latitude; }
+    void setUTC(QDateTime utc) { this->utc = utc; }
+    void setDistance(qreal distance) { this->full_distance = distance; } 
+    
   };
   
   // расстояние между двумя координатами 
@@ -94,15 +101,15 @@ namespace geo {
   qreal lon2lon_distance(qreal min_lon, qreal max_lon, qreal lat);
   qreal lat2lat_distance(qreal min_lat, qreal max_lat, qreal lon);
   
-  geo::GEOPOSITION get_next_geoposition(const geo::GEOPOSITION& geopos, qreal distance);
+  geo::GEOPOSITION get_next_coordinates(const geo::GEOPOSITION& geopos, qreal distance);
   
   bool geoposition_within_bounds(const geo::GEOPOSITION& geopos, const geo::BOUNDS& bounds);
   
-  qreal get_rnd_course(int diff = 0);
-  qreal get_rnd_speed(int diff = 0);
-  geo::COORDINATES get_rnd_coordinates(const geo::BOUNDS& bounds, int diff = 0);
+  qreal get_rnd_course(int rndinit = 0);
+  qreal get_rnd_speed(int rndinit = 0);
+  geo::COORDINATES get_rnd_coordinates(const geo::BOUNDS& bounds, int rndinit = 0);
   
-  geo::GEOPOSITION get_rnd_position(const BOUNDS &bounds, int diff = 0);
+  geo::GEOPOSITION get_rnd_position(const BOUNDS &bounds, int rndinit = 0);
   
   void setCurrentMeasureUnit(geo::Units unit);
   

@@ -776,13 +776,13 @@ void area::SvArea::updateGridStep()
   // находим расстояние до следующей линии на карте с учетом масштаба, шага сетки
   // для горизонтальных линий направление 180 градусов
   geo::GEOPOSITION pos = geo::GEOPOSITION(_area_data.geo_bounds.min_lon, _area_data.geo_bounds.max_lat, 180, 0);
-  pos = geo::get_next_geoposition(pos, MINOR_VGRID_DISTANCE / _area_data.scale);
+  pos = geo::get_next_coordinates(pos, MINOR_VGRID_DISTANCE / _area_data.scale);
   
   _area_data.gridYstep = geo2point(&_area_data, pos.longtitude, pos.latitude).y(); // - BORDER_WIDTH;
   
   // для вертикальных линий направление 90 градусов
   pos = geo::GEOPOSITION(_area_data.geo_bounds.min_lon, _area_data.geo_bounds.max_lat, 90, 0);
-  pos = geo::get_next_geoposition(pos, MINOR_VGRID_DISTANCE / _area_data.scale);
+  pos = geo::get_next_coordinates(pos, MINOR_VGRID_DISTANCE / _area_data.scale);
     
   _area_data.gridXstep = geo2point(&_area_data, pos.longtitude, pos.latitude).x(); // - BORDER_WIDTH;
 

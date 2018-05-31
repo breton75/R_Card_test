@@ -748,7 +748,7 @@ bool MainWindow::createSelfVessel()
     
     ais::aisStaticVoyageData static_voyage_data = readAISStaticVoyageData(q); 
     ais::aisDynamicData dynamic_data = readAISDynamicData(q);
-    gps::gpsInitParams gps_params = readGPSInitParams(q, dynamic_data, last_update);
+    gps::gpsInitParams gps_params = readGPSInitParams(q, dynamic_data);
     ais::aisNavStat nav_stat = readNavStat(q);
     
     q->finish();
@@ -863,7 +863,7 @@ vsl::SvVessel* MainWindow::createOtherVessel(QSqlQuery* q)
     
     ais::aisStaticVoyageData static_voyage_data = readAISStaticVoyageData(q); 
     ais::aisDynamicData dynamic_data = readAISDynamicData(q);
-    gps::gpsInitParams gps_params = readGPSInitParams(q, dynamic_data, last_update);
+    gps::gpsInitParams gps_params = readGPSInitParams(q, dynamic_data);
     ais::aisNavStat nav_stat = readNavStat(q);                     
          
     /** ----- создаем устройства ------ **/
@@ -916,7 +916,7 @@ vsl::SvVessel* MainWindow::createOtherVessel(QSqlQuery* q)
     connect(this, &MainWindow::startAISEmulation, newAIS, &ais::SvOtherAIS::start);
     connect(this, &MainWindow::stopAISEmulation, newAIS, &ais::SvOtherAIS::stop);
     
-    connect(&newVessel->mapObject()->signalHandler, &SvSignalHandler::mouseDoubleClick, this, &MainWindow::editVessel);
+    connect(&newVessel->mapObject()->signalHandler, &SvSignalHandler::mouseDoubleClick, this, &MainWindow::editVesselNavStat);
 
     
     LISTITEMs->insert(vessel_id, new QListWidgetItem(QIcon(), QString("%1\t%2").arg(vessel_id).arg(static_voyage_data.name)));
@@ -1016,7 +1016,7 @@ void MainWindow::on_areaSelectionChanged()
   /// если ничего не  выделено, то сбрасываем
   if(_area->scene->selectedItems().isEmpty()) {
     _selected_vessel_id = -1;
-//    _area->setLabelInfo("");
+    on_updateMapObjectInfo();
   }
   else {
     /// создаем новое выделение
@@ -1089,6 +1089,10 @@ void MainWindow::on_listVessels_doubleClicked(const QModelIndex &index)
       break;
       
     }
+      
+    default:
+      break;
+      
   }
 }
 
@@ -1135,14 +1139,14 @@ void MainWindow::editVessel(int id)
   }
       
   /** --------- изменяем данные судна ----------- **/
-  QDateTime last_update = q->value("gps_last_update").toDateTime();
+//  QDateTime last_update = q->value("gps_last_update").toDateTime();
   ais::aisStaticVoyageData static_voyage_data = readAISStaticVoyageData(q); 
   
   VESSELs->value(id)->ais()->setCourse(g.course);
   VESSELs->value(id)->ais()->setSpeed(g.speed);
   ais::aisDynamicData *dynamic_data = VESSELs->value(id)->ais()->dynamicData();
   
-  gps::gpsInitParams gps_params = readGPSInitParams(q, *dynamic_data, last_update);
+  gps::gpsInitParams gps_params = readGPSInitParams(q, *dynamic_data);
   
   q->finish();
   delete q;
@@ -1184,6 +1188,11 @@ void MainWindow::editVesselNavStat(int id)
 
 void MainWindow::on_updateMapObjectInfo(SvMapObject* mapObject)
 {
+  if(!mapObject) {
+    ui->textMapObjectInfo->setHtml("");
+    return;
+  }
+  
   if(!mapObject->isSelected())
     return;
   
@@ -1197,37 +1206,51 @@ void MainWindow::on_updateMapObjectInfo(SvMapObject* mapObject)
         
         ais::SvAIS* a = AISs->value(mapObject->id());
 
-        ui->textMapObjectInfo->setHtml(QString("<!DOCTYPE html><h3><font color=\"#0000CD\">Текущее судно:</font></h3>" \
-                                               "<p><strong>ID:</strong>\t%1<br />" \
-                                               "<strong>Название:</strong>\t%2<br />" \
-                                               "<strong>Позывной:</strong>\t%3<br />" \
-                                               "<strong>MMSI:</strong>\t%4<br />" \
-                                               "<strong>IMO:</strong>\t%5<br />" \
-                                               "<strong>Порт назнач.:</strong>\t%6<br />" \
-                                               "<strong>Осадка:</strong>\t%7<br />" \
-                                               "<strong>Чел. на борту:</strong>\t%8</p>" \
-                                               "<hr>" \
-                                               "<h3><font color=\"#0000CD\">Текущий статус:</font></h3>" \
-                                               "<p><strong>Широта:</strong>\t%9<br />" \
-                                               "<strong>Долгота:</strong>\t%10<br />" \
-                                               "<strong>Курс:</strong>\t%11%12<br />" \
-                                               "<strong>Скорость:</strong>\t%13 %14<br />" \
-                                               "<strong>Статус:</strong>\t%15</p>")
-                                       .arg(a->vesselId())
-                                       .arg(a->staticVoyageData()->name)
-                                       .arg(a->staticVoyageData()->callsign)
-                                       .arg(a->staticVoyageData()->mmsi)
-                                       .arg(a->staticVoyageData()->imo)
-                                       .arg(a->staticVoyageData()->destination)
-                                       .arg(a->staticVoyageData()->draft)
-                                       .arg(a->staticVoyageData()->team)
-                                       .arg(a->dynamicData()->geoposition.latitude, 0, 'f', 6)
-                                       .arg(a->dynamicData()->geoposition.longtitude, 0, 'f', 6)
-                                       .arg(a->dynamicData()->geoposition.course)
-                                       .arg(QChar(176))
-                                       .arg(a->dynamicData()->geoposition.speed * CMU.ConvertKoeff, 0, 'f', 1)
-                                       .arg(CMU.SpeedDesign)
-                                       .arg(a->navStatus()->name).toUtf8());
+        if((_self_ais->distanceTo(a) < _self_ais->receiveRange() * CMU.MetersCount) || 
+           a->lastDescription().isEmpty()) {
+          
+          QString html = QString("<!DOCTYPE html><h3><font color=\"#0000CD\">Текущее судно:</font></h3>" \
+                                 "<p><strong>ID:</strong>\t%1<br />" \
+                                 "<strong>Название:</strong>\t%2<br />" \
+                                 "<strong>Позывной:</strong>\t%3<br />" \
+                                 "<strong>MMSI:</strong>\t%4<br />" \
+                                 "<strong>IMO:</strong>\t%5<br />" \
+                                 "<strong>Порт назнач.:</strong>\t%6<br />" \
+                                 "<strong>Осадка:</strong>\t%7<br />" \
+                                 "<strong>Чел. на борту:</strong>\t%8</p>" \
+                                 "<hr>" \
+                                 "<h3><font color=\"#0000CD\">Последние данные:</font></h3>" \
+                                 "<p><strong>Время получения:</strong>\t%9<br />"
+                                 "<strong>Широта:</strong>\t%10<br />" \
+                                 "<strong>Долгота:</strong>\t%11<br />" \
+                                 "<strong>Курс:</strong>\t%12%13<br />" \
+                                 "<strong>Скорость:</strong>\t%14 %15<br />" \
+                                 "<strong>Статус:</strong>\t%16</p>")
+                         .arg(a->vesselId())
+                         .arg(a->staticVoyageData()->name)
+                         .arg(a->staticVoyageData()->callsign)
+                         .arg(a->staticVoyageData()->mmsi)
+                         .arg(a->staticVoyageData()->imo)
+                         .arg(a->staticVoyageData()->destination)
+                         .arg(a->staticVoyageData()->draft)
+                         .arg(a->staticVoyageData()->team)
+                         .arg(a->dynamicData()->geoposition.utc.toString("dd/MM/yyyy hh:mm:ss.zzz"))
+                         .arg(a->dynamicData()->geoposition.latitude, 0, 'f', 6)
+                         .arg(a->dynamicData()->geoposition.longtitude, 0, 'f', 6)
+                         .arg(a->dynamicData()->geoposition.course)
+                         .arg(QChar(176))
+                         .arg(a->dynamicData()->geoposition.speed * CMU.ConvertKoeff, 0, 'f', 1)
+                         .arg(CMU.SpeedDesign)
+                         .arg(a->navStatus()->name).toUtf8();
+          
+          ui->textMapObjectInfo->setHtml(html);
+          
+          a->setLastDescription(html);
+          
+        }
+        else
+          ui->textMapObjectInfo->setHtml(a->lastDescription());
+        
       }
         
       break;
@@ -1301,10 +1324,13 @@ void MainWindow::update_NAVTEX_data()
 }
 
 
-gps::gpsInitParams MainWindow::readGPSInitParams(QSqlQuery* q, ais::aisDynamicData& dynamic_data, QDateTime lastUpdate)
+gps::gpsInitParams MainWindow::readGPSInitParams(QSqlQuery* q, ais::aisDynamicData& dynamic_data) //, QDateTime lastUpdate)
 {
+  int vessel_id = q->value("id").toInt();
+  QDateTime last_update = q->value("gps_last_update").toDateTime(); // для нормальной генерации случайных чисел
+  quint64 rndinit = last_update.time().second() * 1000 * last_update.time().msec() * vessel_id;
+  
   gps::gpsInitParams result;
-//  QDateTime dt = q->value("gps_last_update").toDateTime(); // для нормальной генерации случайных чисел
 
   result.gps_timeout = q->value("gps_timeout").toUInt();
   result.init_random_coordinates = q->value("init_random_coordinates").toBool();
@@ -1316,11 +1342,12 @@ gps::gpsInitParams MainWindow::readGPSInitParams(QSqlQuery* q, ais::aisDynamicDa
   result.course_change_segment = q->value("init_course_change_segment").toReal();
   result.speed_change_ratio = q->value("init_speed_change_ratio").toUInt();
   result.speed_change_segment = q->value("init_speed_change_segment").toReal();
+  
   // начальные координаты
   if(result.init_random_coordinates || 
      (!result.init_random_coordinates && !dynamic_data.geoposition.isValidCoordinates())) {
-    
-    geo::COORDINATES coord = geo::get_rnd_coordinates(_bounds, lastUpdate.time().second() * 1000 + lastUpdate.time().msec());
+
+    geo::COORDINATES coord = geo::get_rnd_coordinates(_bounds, rndinit);
     
     result.geoposition.latitude = coord.latitude;
     result.geoposition.longtitude = coord.longtitude;
@@ -1339,7 +1366,7 @@ gps::gpsInitParams MainWindow::readGPSInitParams(QSqlQuery* q, ais::aisDynamicDa
   if(result.init_random_course ||
     (!result.init_random_course && !dynamic_data.geoposition.isValidCourse())) {
     
-    result.geoposition.course = geo::get_rnd_course();
+    result.geoposition.course = geo::get_rnd_course(rndinit);
     dynamic_data.geoposition.course = result.geoposition.course;
     
   }
@@ -1349,7 +1376,7 @@ gps::gpsInitParams MainWindow::readGPSInitParams(QSqlQuery* q, ais::aisDynamicDa
   if(result.init_random_speed ||
     (!result.init_random_speed && !dynamic_data.geoposition.isValidSpeed())) {
     
-    result.geoposition.speed = geo::get_rnd_speed();
+    result.geoposition.speed = geo::get_rnd_speed(rndinit);
     dynamic_data.geoposition.speed = result.geoposition.speed;
     
   }
@@ -1805,7 +1832,14 @@ void MainWindow::on_bnDropDynamicData_clicked()
 
   QString sql1, sql2;
   switch (msgbtn) {
+    
     case QMessageBox::Yes: 
+      
+      if(_selected_vessel_id == -1) {
+        
+        log << svlog::Time << svlog::Critical << "Судно не выбрано" << svlog::endl;
+        return;
+      }
       
       sql1 = QString("UPDATE ais SET dynamic_latitude=NULL, "
                     "dynamic_longtitude=NULL, "
@@ -1844,10 +1878,10 @@ void MainWindow::on_bnDropDynamicData_clicked()
     while(q->next()) {
       
       int vessel_id = q->value("id").toUInt();
-      QDateTime last_update = q->value("gps_last_update").toDateTime(); // для нормальной генерации случайных чисел
+//      QDateTime last_update = q->value("gps_last_update").toDateTime(); // для нормальной генерации случайных чисел
       
       ais::aisDynamicData dynamic_data = readAISDynamicData(q);
-      gps::gpsInitParams gps_params = readGPSInitParams(q, dynamic_data, last_update);
+      gps::gpsInitParams gps_params = readGPSInitParams(q, dynamic_data);
       
       AISs->value(vessel_id)->setDynamicData(dynamic_data);
       GPSs->value(vessel_id)->setInitParams(gps_params);
@@ -1855,6 +1889,7 @@ void MainWindow::on_bnDropDynamicData_clicked()
       VESSELs->value(vessel_id)->updateVessel();
       
     }
+
   }
   
   catch(SvException &e) {

@@ -96,7 +96,7 @@ private:
     
     ais::aisStaticVoyageData readAISStaticVoyageData(QSqlQuery* q);
     ais::aisDynamicData readAISDynamicData(QSqlQuery* q);
-    gps::gpsInitParams readGPSInitParams(QSqlQuery* q, ais::aisDynamicData &dynamic_data, QDateTime lastUpdate);
+    gps::gpsInitParams readGPSInitParams(QSqlQuery* q, ais::aisDynamicData &dynamic_data); //, QDateTime lastUpdate);
     ais::aisNavStat readNavStat(QSqlQuery* q);
     
     int _selected_vessel_id = -1;
@@ -120,7 +120,7 @@ private slots:
     void editVessel(int id);
     void editVesselNavStat(int id);
     
-    void on_updateMapObjectInfo(SvMapObject* mapObject);
+    void on_updateMapObjectInfo(SvMapObject* mapObject = nullptr);
     void on_updateVesselById(int id);
     void on_updateVesselActive(int id);
     

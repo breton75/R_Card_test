@@ -60,7 +60,7 @@ public:
   
   int vesselId() { return _vessel_id; }
   
-  void setInitParams(gps::gpsInitParams &params) { _gps_params = params; _current_geo_position = params.geoposition; }
+  void setInitParams(gps::gpsInitParams &params);
   gps::gpsInitParams& initParams() { return _gps_params; }
   
   idev::SvSimulatedDeviceTypes type() const { return idev::sdtGPS; }
@@ -95,7 +95,8 @@ public slots:
   void set_multiplier(quint32 multiplier) { _multiplier = multiplier;  }
   
 private slots:
-  void on_newGPSData(const geo::GEOPOSITION &geopos);
+  void on_newGPSData(/*const geo::GEOPOSITION &geopos*/);
+  void on_passed1m();
   
 signals:
   void newGPSData(const geo::GEOPOSITION& geopos);
@@ -109,12 +110,14 @@ class gps::SvGPSEmitter: public QThread
   
 public:
   
-  SvGPSEmitter(int vessel_id, gps::gpsInitParams &params, geo::BOUNDS& bounds, quint32 multiplier);
+  SvGPSEmitter(int vessel_id, gps::gpsInitParams *params, geo::GEOPOSITION *geopos, geo::BOUNDS& bounds, quint32 multiplier, QMutex *mutex);
   ~SvGPSEmitter(); 
   
   int vesselId() { return _vessel_id; }
   
-  geo::GEOPOSITION currentGeoPosition() const { return _current_geo_position; }
+//  void setInitParams(gpsInitParams *params);
+  
+//  geo::GEOPOSITION currentGeoPosition() const { return _current_geo_position; }
   
   void stop();
 
@@ -127,9 +130,11 @@ private:
   bool _started = false;
   bool _finished = false;
   
-  gps::gpsInitParams _gps_params;
+  gps::gpsInitParams* _gps_params;
   geo::BOUNDS _bounds;
-  geo::GEOPOSITION _current_geo_position;
+  geo::GEOPOSITION* _current_geo_position;
+  
+  QMutex* _mutex;
   
   // параметры, необходимые для расчетов
   qreal _one_tick_length;         // длина пути в метрах, за один отсчет
@@ -138,8 +143,8 @@ private:
   qreal normalize_course(qreal course);
 
 signals:
-  void newGPSData(const geo::GEOPOSITION& geopos);
-  void passed1m(const geo::GEOPOSITION& geopos);
+  void newGPSData(/*const geo::GEOPOSITION& geopos*/);
+  void passed1m(/*const geo::GEOPOSITION& geopos*/);
   
 };
 
