@@ -136,7 +136,6 @@ void ech::SvECHOAbstract::calcBeam(ech::Beam* beam)
 //  qDebug() << x0 << y0 
   beam->setXYZ(dx, dy, qreal(qGray(_depth_map_image.pixel(x, y)) + 10));
   beam->setBackscatter(qreal(qGray(_depth_map_image.pixel(y, x)) % 50));
-  
 }
 
 

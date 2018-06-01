@@ -197,9 +197,11 @@ void gps::SvGPSEmitter::run()
     
     // если новая координата выходит за границу карты, то меняем курс и вычисляем новые координаты
     if(!geo::geoposition_within_bounds(new_geopos, _bounds)) {
+      
       _current_geo_position->setCourse(normalize_course(_current_geo_position->course + quint64(geo::get_rnd_course()) % 45));
       _mutex->unlock();
       continue;
+      
     }
     
     _current_geo_position->setLongtitude(new_geopos.longtitude);
@@ -207,11 +209,15 @@ void gps::SvGPSEmitter::run()
     _current_geo_position->setDistance(new_geopos.full_distance);
     
     if(pass1m_segment_counter >= 1.0) {
+      
       emit passed1m(/*new_geopos*/);
       pass1m_segment_counter = 0.0;
+      
     }
     else {
+      
       pass1m_segment_counter += _one_tick_length;
+      
     }
     
 //    _current_geo_position = new_geopos;

@@ -353,6 +353,7 @@ void MainWindow::on_bnStart_clicked()
       _navtex->close();
       _self_multi_echo->close();
       _self_fish_echo->close();
+      _self_gps_ifc->close();
       
       emit setMultiplier(1);
       
@@ -372,12 +373,12 @@ MainWindow::~MainWindow()
 {
   if(_current_state == sRunned)
     on_bnStart_clicked();
-  
+//  qDebug() << 1;
   while(_current_state != sStopped)
     qApp->processEvents();
-  
+//  qDebug() << 2;
   save_devices_params();
-  
+//  qDebug() << 3;
   for(int id: VESSELs->keys()) delete VESSELs->value(id);
   
   for(int id: LISTITEMs->keys()) delete LISTITEMs->value(id);
@@ -821,7 +822,7 @@ bool MainWindow::createSelfVessel()
     connect(this, &MainWindow::startECHOFishEmulation, _self_fish_echo, &ech::SvECHOFish::start);
     connect(this, &MainWindow::stopECHOFishEmulation, _self_fish_echo, &ech::SvECHOFish::stop);
     
-    connect(&_self_vessel->mapObject()->signalHandler, &SvSignalHandler::mouseDoubleClick, this, &MainWindow::editVessel);
+    connect(&_self_vessel->mapObject()->signalHandler, &SvSignalHandler::mouseDoubleClick, this, &MainWindow::editVesselNavStat);
 
     connect(this, &MainWindow::new_lag_message_type, _self_lag, &lag::SvLAG::setMessageType);
     
@@ -1205,8 +1206,10 @@ void MainWindow::on_updateMapObjectInfo(SvMapObject* mapObject)
       if(AISs->find(mapObject->id()) != AISs->end()) {
         
         ais::SvAIS* a = AISs->value(mapObject->id());
-
-        if((_self_ais->distanceTo(a) < _self_ais->receiveRange() * CMU.MetersCount) || 
+        
+        qreal dist = _self_ais->distanceTo(a);
+        
+        if((dist < _self_ais->receiveRange() * CMU.MetersCount) || 
            a->lastDescription().isEmpty()) {
           
           QString html = QString("<!DOCTYPE html><h3><font color=\"#0000CD\">Текущее судно:</font></h3>" \
@@ -1217,15 +1220,21 @@ void MainWindow::on_updateMapObjectInfo(SvMapObject* mapObject)
                                  "<strong>IMO:</strong>\t%5<br />" \
                                  "<strong>Порт назнач.:</strong>\t%6<br />" \
                                  "<strong>Осадка:</strong>\t%7<br />" \
-                                 "<strong>Чел. на борту:</strong>\t%8</p>" \
+                                 "<strong>Чел. на борту:</strong>\t%8<br />"
+                                 "<strong>Пройденный путь:</strong>\t%9 %10<br /></p>" \
                                  "<hr>" \
-                                 "<h3><font color=\"#0000CD\">Последние данные:</font></h3>" \
-                                 "<p><strong>Время получения:</strong>\t%9<br />"
-                                 "<strong>Широта:</strong>\t%10<br />" \
-                                 "<strong>Долгота:</strong>\t%11<br />" \
-                                 "<strong>Курс:</strong>\t%12%13<br />" \
-                                 "<strong>Скорость:</strong>\t%14 %15<br />" \
-                                 "<strong>Статус:</strong>\t%16</p>")
+                                 "<h3><font color=\"#0000CD\">Последние полученные данные:</font></h3>" \
+                                 "<p><strong>Время получения:</strong>\t%11<br />"
+                                 "<strong>Широта:</strong>\t%12<br />" \
+                                 "<strong>Долгота:</strong>\t%13<br />" \
+                                 "<strong>Курс:</strong>\t%14%15<br />" \
+                                 "<strong>Скорость:</strong>\t%16 %17<br />" \
+                                 "<strong>Статус:</strong>\t%18<br />" \
+                                 "<strong>Дистанция до судна:</strong>\t%19 %20<br /></p>" \
+                                 "<hr>" \
+                                 "<h3><font color=\"#0000CD\">Параметры имитации движения:</font></h3>" \
+                                 "<p><strong>Курс:</strong>\t%21<br />" \
+                                 "<strong>Скорость:</strong>\t%22<br /></p>")
                          .arg(a->vesselId())
                          .arg(a->staticVoyageData()->name)
                          .arg(a->staticVoyageData()->callsign)
@@ -1234,6 +1243,8 @@ void MainWindow::on_updateMapObjectInfo(SvMapObject* mapObject)
                          .arg(a->staticVoyageData()->destination)
                          .arg(a->staticVoyageData()->draft)
                          .arg(a->staticVoyageData()->team)
+                         .arg(a->dynamicData()->geoposition.full_distance / CMU.MetersCount, 0, 'f', 2)
+                         .arg(CMU.DistanceDesign)
                          .arg(a->dynamicData()->geoposition.utc.toString("dd/MM/yyyy hh:mm:ss.zzz"))
                          .arg(a->dynamicData()->geoposition.latitude, 0, 'f', 6)
                          .arg(a->dynamicData()->geoposition.longtitude, 0, 'f', 6)
@@ -1241,7 +1252,19 @@ void MainWindow::on_updateMapObjectInfo(SvMapObject* mapObject)
                          .arg(QChar(176))
                          .arg(a->dynamicData()->geoposition.speed * CMU.ConvertKoeff, 0, 'f', 1)
                          .arg(CMU.SpeedDesign)
-                         .arg(a->navStatus()->name).toUtf8();
+                         .arg(a->navStatus()->name)
+                         .arg(dist / CMU.MetersCount, 0, 'f', 2)
+                         .arg(CMU.DistanceDesign)
+                         .arg(GPSs->value(a->vesselId())->initParams().init_fixed_course ? 
+                                "Постоянный" : 
+                                QString("±%1° через %2 %3").arg(GPSs->value(a->vesselId())->initParams().course_change_ratio)
+                                .arg(GPSs->value(a->vesselId())->initParams().course_change_segment, 0, 'f', 1)
+                                .arg(CMU.DistanceDesign))
+                         .arg(GPSs->value(a->vesselId())->initParams().init_fixed_course ? 
+                                "Постоянная" : 
+                                QString("±%1% через %2 %3").arg(GPSs->value(a->vesselId())->initParams().speed_change_ratio)
+                                .arg(GPSs->value(a->vesselId())->initParams().speed_change_segment, 0, 'f', 1)
+                                .arg(CMU.DistanceDesign));
           
           ui->textMapObjectInfo->setHtml(html);
           
@@ -1964,7 +1987,6 @@ void MainWindow::on_bnEditNAVTEX_clicked()
 void MainWindow::updateGPSInitParams(gps::SvGPS* g)
 {
   QString upd = "";
-//  gps::gpsInitParams params = g->initParams();
   
   if(!g->initParams().init_random_coordinates) {
     
@@ -1972,19 +1994,14 @@ void MainWindow::updateGPSInitParams(gps::SvGPS* g)
                          .arg(g->currentGeoposition()->latitude)
                          .arg(g->currentGeoposition()->longtitude));
     
-//    params.geoposition.latitude = g->currentGeoposition()->latitude;
-//    params.geoposition.longtitude = g->currentGeoposition()->longtitude;
-    
   }
   
   if(!g->initParams().init_random_course) {
     upd.append(QString("dynamic_course=%1,").arg(g->currentGeoposition()->course));
-//    params.geoposition.course = g->currentGeoposition()->course;
   }
   
   if(!g->initParams().init_random_speed) {
     upd.append(QString("dynamic_speed=%1,").arg(g->currentGeoposition()->speed));
-//    params.geoposition.speed = g->currentGeoposition()->speed;
   }        
   
   if(!g->initParams().init_random_pitch) {

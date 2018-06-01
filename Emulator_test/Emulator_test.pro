@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Emulator_test
 TEMPLATE = app
 
-VERSION = 0.9.4    # major.minor.patch
+VERSION = 0.9.5    # major.minor.patch
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 # The following define makes your compiler emit warnings if you use
@@ -25,6 +25,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+win32 {
+	RC_FILE += icon.rc
+	OTHER_FILES += icon.rc
+}
 
 SOURCES += \
         main.cpp \

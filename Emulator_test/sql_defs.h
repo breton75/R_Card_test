@@ -183,7 +183,7 @@
 #define SQL_INSERT_DEVICES_PARAMS  "INSERT INTO devices_params (device_type) VALUES(%1)"
 
 #define SQL_UPDATE_DEVICES_SERIAL_PARAMS_WHERE  "UPDATE devices_params SET port_name='%1', baudrate=%2, "\
-                                               "parity=%3, stop_bits=%4, data_bits=%5, flow_control=%6"\
+                                               "parity=%3, stop_bits=%4, data_bits=%5, flow_control=%6, description='%7' "\
                                                "WHERE device_type = %8"
 
 #define SQL_UPDATE_DEVICES_NETWORK_PARAMS_WHERE  "UPDATE devices_params SET network_interface=%1, network_protocol=%2, "\
