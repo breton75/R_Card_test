@@ -19,9 +19,6 @@ ech::SvECHOAbstract::SvECHOAbstract(int vessel_id, const geo::GEOPOSITION &geopo
   if(!_depth_map_image.load(imgpath))
     _log << svlog::Critical << svlog::Time << QString("Не удалось загрузить файл %1").arg(imgpath) << svlog::endl;
   
-//  _koeff_lon = _map_width_meters / (_bounds.max_lon - _bounds.min_lon); // / 1000;
-//  _koeff_lat = _map_height_meters / (_bounds.max_lat - _bounds.min_lat); // / 1000;
-  
 }
 
 ech::SvECHOAbstract::~SvECHOAbstract()
@@ -29,95 +26,12 @@ ech::SvECHOAbstract::~SvECHOAbstract()
   deleteLater();
 }
 
-//bool ech::SvECHOAbstract::open()
-//{
-//  _isOpened = true;
-//  return _isOpened;
-//}
-
-//void ech::SvECHOAbstract::close()
-//{ 
-//  stop();
-  
-//  _isOpened = false;
-//}
-
 bool ech::SvECHOAbstract::start(quint32 msecs)
 {
-  
-//  if(!_isOpened)
-//    return false;
-  
-//  if(_udp) delete _udp;
-//  _udp = nullptr;
-  
-//  if(_tcp) delete _tcp;
-//  _tcp = nullptr;
-  
-//  if(_params.protocol == QAbstractSocket::UdpSocket) {
-  
-//    _udp = new QUdpSocket();
-
-//  }
-//  else {
-    
-//    _tcp = new svtcp::SvTcpServer(_log, svtcp::DoNotLog, svtcp::DoNotLog);
-    
-//    if(!_tcp->startServer(_params.port)) {
-      
-//      _log << svlog::Critical << svlog::Time << QString("Ошибка при запуске сервера TCP: %1").arg(_tcp->lastError()) << svlog::endl;
-      
-//      delete _tcp;
-      
-//      return false;
-      
-//    }
-//  }
-
-//  connect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
-  
-////  _udp->s MulticastInterface(QNetworkInterface::interfaceFromIndex(_params.ifc));
-
   _clearance = msecs;
       
   return idev::SvINetworkDevice::start(msecs);
 }
-
-//void ech::SvECHOAbstract::stop()
-//{
-//  disconnect(this, &ech::SvECHOAbstract::newPacket, this, &ech::SvECHOAbstract::write);
-  
-//  if(_udp) delete _udp;
-//  _udp = nullptr;
-  
-//  if(_tcp) {
-    
-//    _tcp->stopServer();
-//    delete _tcp;
-    
-//  }
-  
-//  _tcp = nullptr;
-  
-//}
-
-//void ech::SvECHOAbstract::write(const QByteArray &packet)
-//{
-//  if(!packet.isEmpty()) {
-    
-//    if(_udp) {
-      
-//      _udp->writeDatagram(packet, QHostAddress(_params.ip), _params.port);
-      
-//    }
-//    else if(_tcp) {
-
-//      _tcp->sendToAll(packet);
-      
-//    }
-    
-//  }
-//}
 
 void ech::SvECHOAbstract::calcBeam(ech::Beam* beam)
 {
@@ -199,7 +113,7 @@ void ech::SvECHOMulti::send()
   QByteArray packet = QByteArray(); 
   
   _packet_header.size = sizeof(ech::HeaderMulti) + sizeof(ech::Beam) * _beams.count() + sizeof(quint32);
-  _packet_header.num_points = _beams.count() ; // _beam_count;
+  _packet_header.num_points = qToBigEndian(quint32(_beams.count()));
   _packet_header.ping_number += 1;
   _packet_header.latitude = _current_geoposition.latitude;
   _packet_header.longtitude = _current_geoposition.longtitude;
@@ -207,13 +121,15 @@ void ech::SvECHOMulti::send()
   _packet_header.roll = 0;
   _packet_header.pitch = 0;
   _packet_header.heave = 0;
-  
+
   packet.append((const char*)(&_packet_header), sizeof(ech::HeaderMulti));
-  
-  for(ech::Beam *beam: _beams) 
+    
+  for(ech::Beam *beam: _beams)
     packet.append((const char*)(beam), sizeof(ech::Beam));
+    
+  quint32 crc32 = _crc.calc((unsigned char*)packet.data(), packet.size());
   
-  packet.append(4, char(32));
+  packet.append((const char*)&crc32, sizeof(crc32)); // 4, char(32));
   
   emit newPacket(packet);
   
@@ -283,8 +199,11 @@ void ech::SvECHOFish::send()
   _packet_header.heave = 0; 
   
   packet.append((const char*)(&_packet_header), sizeof(ech::HeaderFish));
-  packet.append((const char*)(_beam), sizeof(ech::Beam));
-  packet.append(4, char(32));
+  packet.append((const char*)(&_beam), sizeof(ech::Beam));
+  
+  quint32 crc32 = _crc.calc((unsigned char*)packet.data(), packet.size());
+  
+  packet.append((const char*)&crc32, sizeof(crc32)); // 4, char(32));
   
   emit newPacket(packet);
   

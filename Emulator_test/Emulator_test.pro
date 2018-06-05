@@ -8,7 +8,7 @@ QT       += core gui printsupport xml sql serialport network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = Emulator_test
+TARGET = Emulator
 TEMPLATE = app
 
 VERSION = 0.9.5    # major.minor.patch
@@ -80,7 +80,8 @@ HEADERS += \
     sv_navtex.h \
     ../../svlib/sv_tcpserverclient.h \
     ../../svlib/sv_secondmeter.h \
-    sv_navstateditor.h
+    sv_navstateditor.h \
+    sv_crc.h
 
 FORMS += \
         mainwindow.ui \

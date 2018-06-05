@@ -12,7 +12,7 @@
 #include <QByteArray>
 #include <QUdpSocket>
 #include <QTcpServer>
-//#include <QNetworkDatagram>
+#include <QtEndian>
 #include <QtGui/QImage>
 
 #include "../../svlib/sv_log.h"
@@ -23,6 +23,7 @@
 #include "sv_idevice.h"
 #include "nmea.h"
 #include "sv_networkeditor.h"
+#include "sv_crc.h"
 
 #define HEADRANGE 40
 
@@ -101,7 +102,7 @@ namespace ech {
   class SvECHOAbstract;
   class SvECHOMulti;
   class SvECHOFish;
-  
+   
 }
 
 class ech::SvECHOAbstract : public idev::SvINetworkDevice
@@ -150,6 +151,8 @@ private:
   
   quint32 _clearance = 1;
   quint32 _clearance_counter = 1;
+  
+  SvCRC32 _crc;
   
   void calcBeam(Beam *beam);
   

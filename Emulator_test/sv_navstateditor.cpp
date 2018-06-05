@@ -12,6 +12,8 @@ SvNavStatEditor::SvNavStatEditor(QWidget *parent, const int vessel_id, const geo
 {
   ui->setupUi(this);
 
+  ui->label->setText(QString("Судно: %1").arg(AISs->value(vessel_id)->staticVoyageData()->name));
+  
   loadNavStats();
   loadPredefinedPositions();
   

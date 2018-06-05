@@ -766,6 +766,7 @@ bool MainWindow::createSelfVessel()
     _self_ais = new ais::SvSelfAIS(vessel_id, static_voyage_data, dynamic_data, log, last_update);
     AISs->insert(vessel_id, _self_ais);
     _self_ais->setNavStatus(nav_stat);
+    _self_ais->setReceiveRange(ui->dspinAISRadius->value());
     
     // LAG
     _self_lag = new lag::SvLAG(vessel_id, dynamic_data.geoposition, log);
@@ -1177,7 +1178,7 @@ void MainWindow::editVesselNavStat(int id)
       break;
       
     case SvNavStatEditor::Accepted:
-
+      
       VESSELs->value(id)->updateVessel();
       
       break;
@@ -1202,14 +1203,15 @@ void MainWindow::on_updateMapObjectInfo(SvMapObject* mapObject)
     case motSelfVessel:
     case motVessel: 
     {
+      int id = mapObject->id();
       
-      if(AISs->find(mapObject->id()) != AISs->end()) {
+      if(AISs->find(id) != AISs->end()) {
         
-        ais::SvAIS* a = AISs->value(mapObject->id());
+        ais::SvAIS* a = AISs->value(id);
         
         qreal dist = _self_ais->distanceTo(a);
         
-        if((dist < _self_ais->receiveRange() * CMU.MetersCount) || 
+        if(((dist < _self_ais->receiveRange() * CMU.MetersCount)) || 
            a->lastDescription().isEmpty()) {
           
           QString html = QString("<!DOCTYPE html><h3><font color=\"#0000CD\">Текущее судно:</font></h3>" \
@@ -1235,7 +1237,7 @@ void MainWindow::on_updateMapObjectInfo(SvMapObject* mapObject)
                                  "<h3><font color=\"#0000CD\">Параметры имитации движения:</font></h3>" \
                                  "<p><strong>Курс:</strong>\t%21<br />" \
                                  "<strong>Скорость:</strong>\t%22<br /></p>")
-                         .arg(a->vesselId())
+                         .arg(id)
                          .arg(a->staticVoyageData()->name)
                          .arg(a->staticVoyageData()->callsign)
                          .arg(a->staticVoyageData()->mmsi)
@@ -1255,16 +1257,16 @@ void MainWindow::on_updateMapObjectInfo(SvMapObject* mapObject)
                          .arg(a->navStatus()->name)
                          .arg(dist / CMU.MetersCount, 0, 'f', 2)
                          .arg(CMU.DistanceDesign)
-                         .arg(GPSs->value(a->vesselId())->initParams().init_fixed_course ? 
+                         .arg(GPSs->value(id)->initParams().init_fixed_course ? 
                                 "Постоянный" : 
-                                QString("±%1° через %2 %3").arg(GPSs->value(a->vesselId())->initParams().course_change_ratio)
-                                .arg(GPSs->value(a->vesselId())->initParams().course_change_segment, 0, 'f', 1)
-                                .arg(CMU.DistanceDesign))
-                         .arg(GPSs->value(a->vesselId())->initParams().init_fixed_course ? 
+                                QString("±%1° через %2 %3").arg(GPSs->value(id)->initParams().course_change_ratio)
+                                                           .arg(GPSs->value(id)->initParams().course_change_segment, 0, 'f', 1)
+                                                           .arg(CMU.DistanceDesign))
+                         .arg(GPSs->value(id)->initParams().init_fixed_speed ? 
                                 "Постоянная" : 
-                                QString("±%1% через %2 %3").arg(GPSs->value(a->vesselId())->initParams().speed_change_ratio)
-                                .arg(GPSs->value(a->vesselId())->initParams().speed_change_segment, 0, 'f', 1)
-                                .arg(CMU.DistanceDesign));
+                                QString("±%1% через %2 %3").arg(GPSs->value(id)->initParams().speed_change_ratio)
+                                                           .arg(GPSs->value(id)->initParams().speed_change_segment, 0, 'f', 1)
+                                                           .arg(CMU.DistanceDesign));
           
           ui->textMapObjectInfo->setHtml(html);
           
@@ -1625,6 +1627,7 @@ void MainWindow::on_bnGPSEditNetworkParams_clicked()
 
   ui->editGPSInterface->setText(_gps_network_params.description);
 }
+
 
 void MainWindow::on_bnNAVTEXAlarmSend_clicked()
 {
