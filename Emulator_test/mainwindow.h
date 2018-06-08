@@ -155,7 +155,7 @@ private slots:
     
     void on_bnStart_clicked();
     
-    void on_echoBeamsUpdated(ech::Beam *bl);
+    void on_echoFishUpdated(ech::HeaderFish *h);
     
     void on_cbMeasureUnits_currentIndexChanged(int index);
     

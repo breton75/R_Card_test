@@ -9,6 +9,7 @@
 #include <QTextEdit>
 #include <QMetaType>
 #include <QUdpSocket>
+#include <QNetworkDatagram>
 
 #include "../../svlib/sv_tcpserverclient.h"
 #include "../../svlib/sv_log.h"
@@ -213,16 +214,14 @@ private slots:
       
       if(_udp) {
         
-        switch (_params.translate_type) {
-          
-          case QHostAddress::Null:
-            _udp->writeDatagram(packet, QHostAddress(_params.ip), _params.port);
-            break;
+        QHostAddress ha = _params.translate_type == QHostAddress::Null ?
+                            QHostAddress(_params.ip) : _params.translate_type;
+        
+//        QNetworkDatagram nd(packet, ha, _params.port);
+//        nd.setInterfaceIndex(_params.ifc);
+        
+        _udp->writeDatagram(packet, ha, _params.port);
             
-          default:
-            _udp->writeDatagram(packet, _params.translate_type, _params.port);
-            break;
-        }
       }
 
       else if(_tcp) 

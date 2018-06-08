@@ -50,6 +50,7 @@ void ech::SvECHOAbstract::calcBeam(ech::Beam* beam)
 //  qDebug() << x0 << y0 
   beam->setXYZ(dx, dy, qreal(qGray(_depth_map_image.pixel(x, y)) + 10));
   beam->setBackscatter(qreal(qGray(_depth_map_image.pixel(y, x)) % 50));
+  
 }
 
 
@@ -68,8 +69,8 @@ ech::SvECHOMulti::~SvECHOMulti()
 
 void ech::SvECHOMulti::setBeamCount(int count)
 {
-  
-  _beams.clear();
+  while(_beams.count())
+    delete _beams.takeFirst();
   
   qreal stepA = qreal(HEADRANGE) / qreal(count - 1);
   int A = HEADRANGE / 2;
@@ -113,7 +114,7 @@ void ech::SvECHOMulti::send()
   QByteArray packet = QByteArray(); 
   
   _packet_header.size = sizeof(ech::HeaderMulti) + sizeof(ech::Beam) * _beams.count() + sizeof(quint32);
-  _packet_header.num_points = qToBigEndian(quint32(_beams.count()));
+  _packet_header.num_points = _beams.count();
   _packet_header.ping_number += 1;
   _packet_header.latitude = _current_geoposition.latitude;
   _packet_header.longtitude = _current_geoposition.longtitude;
@@ -158,10 +159,10 @@ void ech::SvECHOFish::passed1m(const geo::GEOPOSITION& geopos)
   
   if(_clearance_counter < _clearance) {
     
-    _beam->fish = 0;
+    _packet_header.FISH = 0;
     _clearance_counter++; 
     
-    emit updated(_beam);
+    emit updated(&_packet_header);
     return;
   }
   
@@ -170,16 +171,19 @@ void ech::SvECHOFish::passed1m(const geo::GEOPOSITION& geopos)
   
   calcBeam(_beam);
   
-  qsrand(_beam->Z * QTime::currentTime().msecsSinceStartOfDay());
+  _packet_header.backscatter = _beam->backscatter;
+  _packet_header.Z = _beam->Z;
+  
+  qsrand(_packet_header.Z * QTime::currentTime().msecsSinceStartOfDay());
   if((_fish_counter % (10 - _fish_count)) == 0) 
-      _beam->fish = (1 << (qrand() % 48)) & 0xFFFC;
+      _packet_header.FISH = (1 << (qrand() % 48)) & 0xFFFC;
   
   else
-    _beam->fish = 0;
+    _packet_header.FISH = 0;
     
   _fish_counter++;
       
-  emit updated(_beam);
+  emit updated(&_packet_header);
   
   send();
   
@@ -187,9 +191,7 @@ void ech::SvECHOFish::passed1m(const geo::GEOPOSITION& geopos)
 
 void ech::SvECHOFish::send()
 {
-  QByteArray packet = QByteArray(); 
-  
-  _packet_header.size = sizeof(ech::HeaderMulti) + sizeof(ech::Beam) + sizeof(quint32);
+  _packet_header.size = sizeof(ech::HeaderFish) + sizeof(quint32);
   _packet_header.ping_number += 1;
   _packet_header.latitude = _current_geoposition.latitude;
   _packet_header.longtitude = _current_geoposition.longtitude;
@@ -198,8 +200,8 @@ void ech::SvECHOFish::send()
   _packet_header.pitch = 0;
   _packet_header.heave = 0; 
   
+  QByteArray packet = QByteArray(); 
   packet.append((const char*)(&_packet_header), sizeof(ech::HeaderFish));
-  packet.append((const char*)(&_beam), sizeof(ech::Beam));
   
   quint32 crc32 = _crc.calc((unsigned char*)packet.data(), packet.size());
   

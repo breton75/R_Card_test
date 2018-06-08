@@ -804,8 +804,7 @@ bool MainWindow::createSelfVessel()
     connect(_self_vessel, &vsl::SvVessel::updateMapObjectPos, _area->scene, area::SvAreaScene::setMapObjectPos);
     connect(_self_vessel, &vsl::SvVessel::updateMapObjectPos, this, &on_updateMapObjectInfo);
     
-//    connect(_self_multi_echo, &ech::SvECHOMulti::beamsUpdated, this, &MainWindow::on_echoBeamsUpdated);
-    connect(_self_fish_echo, &ech::SvECHOFish::updated, this, &MainWindow::on_echoBeamsUpdated);
+    connect(_self_fish_echo, &ech::SvECHOFish::updated, this, &MainWindow::on_echoFishUpdated);
       
     connect(this, &MainWindow::setMultiplier, _self_gps, &gps::SvGPS::set_multiplier);
     
@@ -2037,22 +2036,22 @@ void MainWindow::updateGPSInitParams(gps::SvGPS* g)
 //  return;
 }
 
-void MainWindow::on_echoBeamsUpdated(ech::Beam* bl)
+void MainWindow::on_echoFishUpdated(ech::HeaderFish* h)
 {
   double min = _curve->keyAxis()->range().lower;
   double max = _curve->keyAxis()->range().upper + 1;
 //  qDebug() << min << max;
   
   _curve->data().data()->remove(min);
-  _curve->addData(max, -bl->Z);
+  _curve->addData(max, -h->Z);
 
   _scatt->data().data()->remove(min);
-  _scatt->addData(max, -bl->Z, -bl->Z, -bl->Z - bl->backscatter, -bl->Z - bl->backscatter);
+  _scatt->addData(max, -h->Z, -h->Z, -h->Z - h->backscatter, -h->Z - h->backscatter);
   
-  if(bl->fish) {
-    qreal step = bl->Z / qreal(sizeof(bl->fish));
-    for(int i = 0; i < sizeof(bl->fish); i++)
-      if(bl->fish & (1 << i)) _fish->addData(max, -(step * i));
+  if(h->FISH) {
+    qreal step = h->Z / qreal(sizeof(h->FISH));
+    for(int i = 0; i < sizeof(h->FISH); i++)
+      if(h->FISH & (1 << i)) _fish->addData(max, -(step * i));
   }
   
   ui->customplot->xAxis->setRange(min + 1, max);

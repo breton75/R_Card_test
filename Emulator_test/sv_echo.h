@@ -28,19 +28,6 @@
 #define HEADRANGE 40
 
 namespace ech {
-
-  struct echoData {                     // Информация о судне. Данные передаются каждые 6 минут
-    
-    quint32 id;                           // id судна в БД
-    QString mmsi;                         // Номер MMSI
-    QString imo;                          // Номер Международной морской организации (IMO)
-    QString callsign;                     // Радиопозывной и название плавучего средства
-    quint32 length;                       // Габариты
-    quint32 width;
-    QString type;                         // Тип плавучего средства
-                                          // Данные о месте антенны (от ГНСС Глонасс или GPS)
-      
-  };
   
   #pragma pack(1)
   struct Beam {
@@ -50,8 +37,7 @@ namespace ech {
     float Z;
     float angle;
     float backscatter;
-    quint8 quality = 1;
-    quint32 fish = 0;
+    quint32 spare = 0;
     
     void setXYZ(float X, float Y, float Z) { this->X = X;  this->Y = Y; this->Z = Z;}
     void setBackscatter(float backscatter) { this->backscatter = backscatter; }
@@ -85,14 +71,14 @@ namespace ech {
     qint32 ping_number = 0;
     double latitude;
     double longtitude;
-    float bearing = 0;
-    float roll = 0;
-    float pitch = 0;
-    float heave = 0;
+    float bearing;
+    float roll;
+    float pitch;
+    float heave;
     quint32 sample_type = 1;
-    float Z = 0;
+    float Z;
     quint32 FISH = 0;
-    float backscatter = 0;
+    float backscatter;
     quint32 spare = 0;
   };  
   #pragma pack(pop)
@@ -205,7 +191,7 @@ class ech::SvECHOFish : public ech::SvECHOAbstract
   
 public:
   SvECHOFish(int vessel_id, const geo::GEOPOSITION& geopos, const geo::BOUNDS& bounds, QString& imgpath, svlog::SvLog &log);
-//  ~SvECHOFish() { }
+  ~SvECHOFish() { if(_beam) delete _beam; }
 
   void setFishCount(int count);
 
@@ -218,7 +204,7 @@ public:
 //  void stop();
   
 private:
-  ech::Beam* _beam;
+  ech::Beam* _beam = nullptr;
   quint32 _fish_count = 0;
   quint32 _fish_counter = 0;
   
@@ -227,7 +213,7 @@ private:
   void send();
 
 signals:
-  void updated(ech::Beam* bl);
+  void updated(ech::HeaderFish* h);
   
 public slots:
   void passed1m(const geo::GEOPOSITION& geopos);
