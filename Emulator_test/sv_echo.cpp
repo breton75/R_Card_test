@@ -173,24 +173,6 @@ void ech::SvECHOFish::passed1m(const geo::GEOPOSITION& geopos)
   
   _packet_header.backscatter = _beam->backscatter;
   _packet_header.Z = _beam->Z;
-  
-  qsrand(_packet_header.Z * QTime::currentTime().msecsSinceStartOfDay());
-  if((_fish_counter % (10 - _fish_count)) == 0) 
-      _packet_header.FISH = (1 << (qrand() % 48)) & 0xFFFC;
-  
-  else
-    _packet_header.FISH = 0;
-    
-  _fish_counter++;
-      
-  emit updated(&_packet_header);
-  
-  send();
-  
-}
-
-void ech::SvECHOFish::send()
-{
   _packet_header.size = sizeof(ech::HeaderFish) + sizeof(quint32);
   _packet_header.ping_number += 1;
   _packet_header.latitude = _current_geoposition.latitude;
@@ -199,6 +181,19 @@ void ech::SvECHOFish::send()
   _packet_header.roll = 0;
   _packet_header.pitch = 0;
   _packet_header.heave = 0; 
+  
+  qsrand(_packet_header.Z * QTime::currentTime().msecsSinceStartOfDay());
+  if((_fish_counter % (100 - 10 * _fish_count)) == 0) {
+    quint64 sdv = qrand() % 64;
+      _packet_header.FISH = (1 << sdv) & 0xFFFFFFFC;
+  }
+  
+  else
+    _packet_header.FISH = 0;
+  
+  _fish_counter++;
+      
+  emit updated(&_packet_header); // отрисовываем на мониторе эхолота
   
   QByteArray packet = QByteArray(); 
   packet.append((const char*)(&_packet_header), sizeof(ech::HeaderFish));
@@ -210,3 +205,25 @@ void ech::SvECHOFish::send()
   emit newPacket(packet);
   
 }
+
+//void ech::SvECHOFish::send()
+//{
+//  _packet_header.size = sizeof(ech::HeaderFish) + sizeof(quint32);
+////  _packet_header.ping_number += 1;
+//  _packet_header.latitude = _current_geoposition.latitude;
+//  _packet_header.longtitude = _current_geoposition.longtitude;
+//  _packet_header.bearing = _current_geoposition.course;
+//  _packet_header.roll = 0;
+//  _packet_header.pitch = 0;
+//  _packet_header.heave = 0; 
+////  qDebug() << "send:" << _packet_header.ping_number << _packet_header.FISH ;
+//  QByteArray packet = QByteArray(); 
+//  packet.append((const char*)(&_packet_header), sizeof(ech::HeaderFish));
+  
+//  quint32 crc32 = _crc.calc((unsigned char*)packet.data(), packet.size());
+  
+//  packet.append((const char*)&crc32, sizeof(crc32)); // 4, char(32));
+  
+//  emit newPacket(packet);
+  
+//}

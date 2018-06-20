@@ -219,8 +219,10 @@ bool MainWindow::init()
   connect(this, &MainWindow::newState, this, &MainWindow::stateChanged);
   
   _timer_x10.setSingleShot(true);
-  connect(&_timer_x10, &QTimer::timeout, this, &MainWindow::setX10Emulation);
-
+  connect(&_timer_x10, &QTimer::timeout, this, &MainWindow::on_timer_X10);
+  
+  _timer_stepByStep.setSingleShot(true);
+  connect(&_timer_stepByStep, &QTimer::timeout, this, &MainWindow::on_timer_stepByStep);
   
   return true;
 
@@ -296,6 +298,7 @@ void MainWindow::on_bnStart_clicked()
         _navtex->close();
         _self_multi_echo->close();
         _self_fish_echo->close();
+        _self_gps_ifc->close();
         
         emit newState(sStopped);
         
@@ -354,8 +357,10 @@ void MainWindow::on_bnStart_clicked()
       _self_multi_echo->close();
       _self_fish_echo->close();
       _self_gps_ifc->close();
+      _self_gps_ifc->close();
       
       emit setMultiplier(1);
+      emit setStepByStep(false);
       
       stateChanged(sStopped);
           
@@ -807,6 +812,8 @@ bool MainWindow::createSelfVessel()
     connect(_self_fish_echo, &ech::SvECHOFish::updated, this, &MainWindow::on_echoFishUpdated);
       
     connect(this, &MainWindow::setMultiplier, _self_gps, &gps::SvGPS::set_multiplier);
+    connect(this, &MainWindow::setStepByStep, _self_gps, &gps::SvGPS::set_step_by_step);
+    connect(this, &MainWindow::nextStep, _self_gps, &gps::SvGPS::nextStep);
     
     connect(this, &MainWindow::startGPSEmulation, _self_gps, &gps::SvGPS::start);
     connect(this, &MainWindow::stopGPSEmulation, _self_gps, &gps::SvGPS::stop);
@@ -910,6 +917,8 @@ vsl::SvVessel* MainWindow::createOtherVessel(QSqlQuery* q)
     connect(_self_ais, &ais::SvSelfAIS::interrogateRequest, newAIS, &ais::SvOtherAIS::on_interrogate);
     
     connect(this, &MainWindow::setMultiplier, newGPS, &gps::SvGPS::set_multiplier);
+    connect(this, &MainWindow::setStepByStep, newGPS, &gps::SvGPS::set_step_by_step);
+    connect(this, &MainWindow::nextStep, newGPS, &gps::SvGPS::nextStep);
     
     connect(this, &MainWindow::startGPSEmulation, newGPS, &gps::SvGPS::start);
     connect(this, &MainWindow::stopGPSEmulation, newGPS, &gps::SvGPS::stop);
@@ -1927,11 +1936,19 @@ void MainWindow::on_bnDropDynamicData_clicked()
 }
 
 
-void MainWindow::setX10Emulation()
+void MainWindow::on_timer_X10()
 {
   emit setMultiplier(10);
-  ui->bnStart->setStyleSheet("background-color: rgb(85, 170, 255);");
+  ui->bnStart->setStyleSheet("background-color: rgb(215, 210, 20);");
   ui->bnStart->setText("Старт х10");
+  update();
+}
+
+void MainWindow::on_timer_stepByStep()
+{
+  emit setStepByStep(true);
+  ui->bnStart->setStyleSheet("background-color: rgb(85, 170, 255);");
+  ui->bnStart->setText("Пошагово");
   update();
 }
 
@@ -1940,12 +1957,14 @@ void MainWindow::on_bnStart_pressed()
   if(_current_state != sStopped)
     return;
   
-  _timer_x10.start(2000); 
+  _timer_stepByStep.start(2000);
+  _timer_x10.start(4000); 
 }
 
 void MainWindow::on_bnStart_released()
 {
-    _timer_x10.stop();
+  _timer_stepByStep.stop();
+  _timer_x10.stop();
 }
 
 
@@ -2049,9 +2068,17 @@ void MainWindow::on_echoFishUpdated(ech::HeaderFish* h)
   _scatt->addData(max, -h->Z, -h->Z, -h->Z - h->backscatter, -h->Z - h->backscatter);
   
   if(h->FISH) {
-    qreal step = h->Z / qreal(sizeof(h->FISH));
-    for(int i = 0; i < sizeof(h->FISH); i++)
-      if(h->FISH & (1 << i)) _fish->addData(max, -(step * i));
+    
+    qreal step = h->Z / qreal(sizeof(h->FISH) * 8);
+
+    for(int i = 0; i < sizeof(h->FISH) * 8; i++) {
+      
+      if(h->FISH & (1 << i)) {
+        
+        _fish->addData(max, -(step * i));
+        
+      }
+    }
   }
   
   ui->customplot->xAxis->setRange(min + 1, max);
@@ -2114,3 +2141,8 @@ void MainWindow::on_actionNavStat_triggered()
   editVesselNavStat(_selected_vessel_id);
 }
 
+
+void MainWindow::on_bnStep_clicked()
+{
+    emit nextStep();
+}

@@ -103,6 +103,7 @@ private:
     States _current_state = sStopped;
     
     QTimer _timer_x10;
+    QTimer _timer_stepByStep;
     
     
     bool createSelfVessel();
@@ -140,7 +141,8 @@ private slots:
     
     void stateChanged(States state);
     
-    void setX10Emulation();
+    void on_timer_X10();
+    void on_timer_stepByStep();
     void on_bnStart_pressed();
     void on_bnStart_released();
     
@@ -165,10 +167,14 @@ private slots:
     
     void on_bnGPSEditNetworkParams_clicked();
     
+    void on_bnStep_clicked();
+    
 signals:
   void newState(States state);
   
   void setMultiplier(quint32 multiplier);
+  void setStepByStep(bool step_by_step);
+  void nextStep();
   
   void startGPSEmulation(quint32 msecs);
   void startAISEmulation(quint32 msecs);

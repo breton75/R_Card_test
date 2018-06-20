@@ -29,6 +29,7 @@
   </qresource>
   <qresource prefix="icons">
     <file>Icons/dropgeo.ico</file>
+    <file>Icons/next_step.ico</file>
     <file>Icons/handwheel.ico</file>
     <file>Icons/link-broken2.ico</file>
     <file>Icons/vessel_paused.ico</file>

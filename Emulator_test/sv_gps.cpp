@@ -59,11 +59,12 @@ bool gps::SvGPS::start(quint32 msecs)
   if(_gps_emitter) 
     delete _gps_emitter;
   
-  _gps_emitter = new gps::SvGPSEmitter(_vessel_id, &_gps_params, &_current_geo_position, _bounds, _multiplier, &_mutex);
+  _gps_emitter = new gps::SvGPSEmitter(_vessel_id, &_gps_params, &_current_geo_position, _bounds, _multiplier, _step_by_step, &_mutex);
   connect(_gps_emitter, &gps::SvGPSEmitter::finished, _gps_emitter, &gps::SvGPSEmitter::deleteLater);
   connect(_gps_emitter, &gps::SvGPSEmitter::newGPSData, this, &SvGPS::on_newGPSData);
 //  connect(_gps_emitter, SIGNAL(passed1m(geo::GEOPOSITION)), this, SIGNAL(passed1m(geo::GEOPOSITION)));
   connect(_gps_emitter, &gps::SvGPSEmitter::passed1m, this, &SvGPS::on_passed1m);
+  connect(this, &SvGPS::nextStep, _gps_emitter, &gps::SvGPSEmitter::nextStep);
   _gps_emitter->start();
   
 }
@@ -89,11 +90,12 @@ void gps::SvGPS::on_passed1m()
 
 
 /** ******  EMITTER  ****** **/
-gps::SvGPSEmitter::SvGPSEmitter(int vessel_id, gps::gpsInitParams* params, geo::GEOPOSITION* geopos, geo::BOUNDS& bounds, quint32 multiplier, QMutex* mutex)
+gps::SvGPSEmitter::SvGPSEmitter(int vessel_id, gps::gpsInitParams* params, geo::GEOPOSITION* geopos, geo::BOUNDS& bounds, quint32 multiplier, bool step_by_step, QMutex* mutex)
 {
   _vessel_id = vessel_id;
   _bounds = bounds;
   _multiplier = multiplier;
+  _step_by_step = step_by_step;
 
   _gps_params = params; 
   _current_geo_position = geopos;
@@ -149,6 +151,11 @@ void gps::SvGPSEmitter::run()
       usleep(100); // чтоб не грузило систему
       continue;
     }
+    
+    if(_step_by_step && !_next_step)
+      continue;
+    
+    _next_step = false;
     
     calc_timer = QTime::currentTime().msecsSinceStartOfDay() - 1;
     
