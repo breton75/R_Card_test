@@ -182,10 +182,18 @@ void ech::SvECHOFish::passed1m(const geo::GEOPOSITION& geopos)
   _packet_header.pitch = 0;
   _packet_header.heave = 0; 
   
-  qsrand(_packet_header.Z * QTime::currentTime().msecsSinceStartOfDay());
-  if((_fish_counter % (100 - 10 * _fish_count)) == 0) {
-    quint64 sdv = qrand() % 64;
-      _packet_header.FISH = (1 << sdv) & 0xFFFFFFFC;
+  if((_fish_counter % (30 - 3 * _fish_count)) == 0) {
+    
+    qsrand(_packet_header.Z * QTime::currentTime().msecsSinceStartOfDay());
+    
+//    uint sdv = qrand() % 64;
+//    uint sdv2 = (sdv % 64);
+//    quint64 v = ;
+//    v <<= sdv2;
+//    qDebug() << sdv << sdv2 << v << (v & 0xFFFFFFFF);
+//    qDebug() << _packet_header.ping_number << sdv << v << (v & 0x3FFFFFFC);
+//    qDebug() << (7 << 31) << (7 << 84);
+      _packet_header.FISH = ((1ULL << (qrand() % 64)) & 0xFFFFFFFF) & 0x3FFFFFFC;
   }
   
   else

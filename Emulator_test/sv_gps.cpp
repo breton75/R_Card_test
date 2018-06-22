@@ -155,7 +155,7 @@ void gps::SvGPSEmitter::run()
     if(_step_by_step && !_next_step)
       continue;
     
-    _next_step = false;
+    
     
     calc_timer = QTime::currentTime().msecsSinceStartOfDay() - 1;
     
@@ -219,6 +219,7 @@ void gps::SvGPSEmitter::run()
       
       emit passed1m(/*new_geopos*/);
       pass1m_segment_counter = 0.0;
+      _next_step = false;
       
     }
     else {
@@ -265,6 +266,7 @@ void gps::SvGPSNetworkInterface::newGPSData(const geo::GEOPOSITION& geopos)
   QString s = nmea::gps_RMC(_current_geoposition);
   
   packet.append(s);
+  packet.append(1, char(0));
   
   emit newPacket(packet);
 }

@@ -141,8 +141,8 @@ private slots:
     
     void stateChanged(States state);
     
-    void on_timer_X10();
-    void on_timer_stepByStep();
+    void timer_X10_timeout();
+    void timer_stepByStep_timeout();
     void on_bnStart_pressed();
     void on_bnStart_released();
     

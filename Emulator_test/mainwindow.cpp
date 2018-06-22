@@ -27,7 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     qRegisterMetaType<geo::GEOPOSITION>("geo::GEOPOSITION");
 
     ui->setupUi(this);
-
+    ui->bnStep->setVisible(false);
+    
     setWindowTitle(QString("Имитатор судового оборудования v.%1").arg(APP_VERSION));
     
     log = svlog::SvLog(ui->textLog);
@@ -219,10 +220,10 @@ bool MainWindow::init()
   connect(this, &MainWindow::newState, this, &MainWindow::stateChanged);
   
   _timer_x10.setSingleShot(true);
-  connect(&_timer_x10, &QTimer::timeout, this, &MainWindow::on_timer_X10);
+  connect(&_timer_x10, &QTimer::timeout, this, &MainWindow::timer_X10_timeout);
   
   _timer_stepByStep.setSingleShot(true);
-  connect(&_timer_stepByStep, &QTimer::timeout, this, &MainWindow::on_timer_stepByStep);
+  connect(&_timer_stepByStep, &QTimer::timeout, this, &MainWindow::timer_stepByStep_timeout);
   
   return true;
 
@@ -1709,6 +1710,8 @@ void MainWindow::stateChanged(States state)
       ui->bnStart->setText("Стоп");
       ui->bnStart->setStyleSheet("background-color: tomato");
       
+      ui->bnStep->setEnabled(true);
+      
       break;
     }
       
@@ -1747,6 +1750,9 @@ void MainWindow::stateChanged(States state)
       ui->bnStart->setIcon(QIcon(":/icons/Icons/start.ico"));
       ui->bnStart->setText("Старт");
       ui->bnStart->setStyleSheet("");
+      
+      ui->bnStep->setEnabled(true);
+      ui->bnStep->setVisible(false);
       break;
     }
       
@@ -1754,6 +1760,7 @@ void MainWindow::stateChanged(States state)
     case sStopping:
     {
       ui->bnStart->setEnabled(false);
+      ui->bnStep->setEnabled(false);
       ui->tabWidget->setEnabled(false);
       break;
     }
@@ -1936,7 +1943,7 @@ void MainWindow::on_bnDropDynamicData_clicked()
 }
 
 
-void MainWindow::on_timer_X10()
+void MainWindow::timer_X10_timeout()
 {
   emit setMultiplier(10);
   ui->bnStart->setStyleSheet("background-color: rgb(215, 210, 20);");
@@ -1944,11 +1951,12 @@ void MainWindow::on_timer_X10()
   update();
 }
 
-void MainWindow::on_timer_stepByStep()
+void MainWindow::timer_stepByStep_timeout()
 {
   emit setStepByStep(true);
   ui->bnStart->setStyleSheet("background-color: rgb(85, 170, 255);");
   ui->bnStart->setText("Пошагово");
+  ui->bnStep->setVisible(true);
   update();
 }
 
