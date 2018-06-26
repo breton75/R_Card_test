@@ -57,6 +57,8 @@ namespace ais {
     quint32 team;
     quint8  navstat_ITU_id;               // Навигационный статус
     
+    quint8 sequential_msg_id = 0;         // 0 - 9
+    
   };
   
   struct aisDynamicData {                    // Динамическая информация
@@ -138,7 +140,10 @@ public:
   
   QString lastDescription() { return _last_description; }
   void setLastDescription(QString& html) { _last_description = html; }
-    
+  
+  void incSequentialId() { _static_voyage_data.sequential_msg_id = _static_voyage_data.sequential_msg_id == 9 ?
+                         0 : _static_voyage_data.sequential_msg_id + 1; }
+  
   virtual bool open() = 0;
   virtual void close() = 0;
   

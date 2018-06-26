@@ -28,6 +28,7 @@ public:
   
   QString last_error() { return _last_error; }
     
+  
 private slots:
   void on_cbProtocolCurrentIndexChanged(int index);
   void on_cbTranslateCurrentIndexChanged(int index);
@@ -39,6 +40,8 @@ private:
   
   SvException _exception;
   QString _last_error = "";
+  
+  QMap<idev::SvSimulatedDeviceTypes, QString> devices_list = {{idev::sdtEchoMulti, "Многолучевой эхолот"}, {idev::sdtEchoFish, "Рыбопромысловый эхолот"}};
   
   void accept();
   

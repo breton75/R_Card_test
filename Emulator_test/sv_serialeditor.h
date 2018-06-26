@@ -74,7 +74,7 @@ private:
                                                    {QSerialPort::HardwareControl, "Аппаратное"},
                                                    {QSerialPort::SoftwareControl, "Программное"}};
   
-  QMap<idev::SvSimulatedDeviceTypes, QString> devices_list = {{idev::sdtLAG, "ЛАГ"}, {idev::sdtSelfAIS, "АИС"}, {idev::sdtNavtex, "НАВТЭК"}};
+  QMap<idev::SvSimulatedDeviceTypes, QString> devices_list = {{idev::sdtLAG, "ЛАГ"}, {idev::sdtSelfAIS, "АИС"}, {idev::sdtNavtex, "НАВТЭКС"}};
   
   SvException _exception;
   QString _last_error = "";

@@ -68,11 +68,13 @@ void ais::SvSelfAIS::on_receive_message(ais::SvAIS* otherAIS, quint32 message_id
       
       case 5:
       {
-       
+        
         QStringList l = nmea::ais_message_5(_static_voyage_data.talkerID, otherAIS->staticVoyageData()); //, otherAIS->navStatus());
         emit write_message(l.first());
         for(int i = 0; i < 100000; i++) ;
         emit write_message(l.last());
+        
+        otherAIS->incSequentialId();
         
         break;
       }
@@ -146,6 +148,7 @@ void ais::SvSelfAIS::write(const QString &message)
 //  return;
   _log << svlog::Time << svlog::Data << message << svlog::endl;
   _port.write(message.toStdString().c_str(), message.size());
+//  _port.waitForBytesWritten(100);
   
 }
 

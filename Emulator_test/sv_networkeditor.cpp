@@ -35,8 +35,8 @@ SvNetworkEditor::SvNetworkEditor(idev::NetworkParams params, QWidget *parent) :
   ui->cbTranslateType->setCurrentIndex(ui->cbTranslateType->findData(params.translate_type));
   ui->editIP->setText(QHostAddress(params.ip).toString());  
   ui->spinPort->setValue(params.port);
-  
-  ui->lblCaption->setText(QString("Настройки порта для устройства: "));
+
+  ui->lblCaption->setText(QString("Настройки для: %1").arg(devices_list.value(params.dev_type)));
   
   
   

@@ -11,8 +11,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Emulator
 TEMPLATE = app
 
-VERSION = 0.9.6    # major.minor.patch
-DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+#VERSION = 0.9.7    # major.minor.patch
+#DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -26,8 +27,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 win32 {
-	RC_FILE += icon.rc
-	OTHER_FILES += icon.rc
+	RC_FILE += resources.rc
+#	OTHER_FILES += resources.rc
+#  VERSION += resources.rc
 }
 
 SOURCES += \
@@ -81,7 +83,8 @@ HEADERS += \
     ../../svlib/sv_tcpserverclient.h \
     ../../svlib/sv_secondmeter.h \
     sv_navstateditor.h \
-    sv_crc.h
+    sv_crc.h \
+    version.h
 
 FORMS += \
         mainwindow.ui \

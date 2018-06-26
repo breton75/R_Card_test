@@ -44,8 +44,8 @@ SvSerialEditor::SvSerialEditor(SerialPortParams params, QWidget *parent) :
   
   this->params = params;
     
-  ui->lblCaption->setText(QString("Настройки порта для устройства %1").arg(devices_list.value(params.dev_type))); 
-  
+  ui->lblCaption->setText(QString("Настройки для: %1").arg(devices_list.value(params.dev_type)));
+    
   connect(ui->bnSave, SIGNAL(clicked()), this, SLOT(accept()));
   connect(ui->bnCancel, SIGNAL(clicked()), this, SLOT(reject()));
   

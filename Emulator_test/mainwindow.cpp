@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include "version.h"
 
 #define ECHO_MONITOR_WIDTH 500
 
@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->bnStep->setVisible(false);
     
-    setWindowTitle(QString("Имитатор судового оборудования v.%1").arg(APP_VERSION));
+    setWindowTitle(QString("Имитатор судового оборудования v.%1").arg(VER_FILEVERSION_STR));  // APP_VERSION
     
     log = svlog::SvLog(ui->textLog);
 
@@ -157,8 +157,13 @@ bool MainWindow::init()
     ui->cbNAVTEXReceiveFrequency->addItem(freqs.value(freq_id), freq_id);
   
   /// тревога
+  ui->cbLAGAlarmState->clear();
   ui->cbLAGAlarmState->addItems(QStringList({"Порог превышен", "Порог не превышен"}));
+  
+  ui->cbAISAlarmState->clear();
   ui->cbAISAlarmState->addItems(QStringList({"Порог превышен", "Порог не превышен"}));
+  
+  ui->cbNAVTEXAlarmState->clear();
   ui->cbNAVTEXAlarmState->addItems(QStringList({"Порог превышен", "Порог не превышен"}));
   
   /// типы сообщений LAG

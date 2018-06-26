@@ -291,10 +291,11 @@ QStringList nmea::ais_message_5(QString &talkerID, ais::aisStaticVoyageData* sta
   for(int i = 0; i < total_count; i++) {
     
     
-    QString s = QString("!%1VDM,%2,%3,0,A,%4,2*")
+    QString s = QString("!%1VDM,%2,%3,%4,A,%5,2*")
                               .arg(talkerID)
                               .arg(total_count)
                               .arg(i + 1)
+                              .arg(static_voyage_data->sequential_msg_id)
                               .arg(msg.mid(0 + 62 * i, 62));
     
         quint8 src = 0;
@@ -463,11 +464,11 @@ QString nmea::alarm_ALR(QString talkerID, int id , QString state, QString text)
     
   }
   
-  result = QString("$%1ALR,%2,%3,%4.00,%5,%6,A,%7*")
+  result = QString("$%1ALR,%2.00,%3,%4,A,%5*")
                    .arg(talkerID)
-                   .arg(QTime::currentTime().toString("hh"))
-                   .arg(QTime::currentTime().toString("mm"))
-                   .arg(QTime::currentTime().toString("ss"))
+                   .arg(QTime::currentTime().toString("hhmmss"))
+//                   .arg(QTime::currentTime().toString("mm"))
+//                   .arg(QTime::currentTime().toString("ss"))
                    .arg(QString("%1").arg(id, 3).replace(" ", "0"))
                    .arg(state)
                    .arg(new_text.left(62));
@@ -486,9 +487,9 @@ QString nmea::gps_RMC(const geo::GEOPOSITION &geopos)
 {
   QString result = QString("$GPRMC,%1,A,%2,%3,%4,%5,%6,%7,%8,,,*")
                    .arg(geopos.utc.time().toString("hhmmss.zzz"))
-                   .arg(geopos.latitude, 0, 'f', 4)
+                   .arg(geopos.latitude * 100.0, 0, 'f', 4)
                    .arg(geopos.latitude > 0 ? "N" : "S")
-                   .arg(geopos.longtitude, 0, 'f', 4)
+                   .arg(geopos.longtitude * 100.0, 0, 'f', 4)
                    .arg(geopos.longtitude > 0 ? "E" : "W")
                    .arg(geopos.speed, 0, 'f', 2)
                    .arg(geopos.course, 0, 'f', 2)
