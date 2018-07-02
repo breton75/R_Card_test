@@ -29,6 +29,7 @@ SvNavStatEditor::SvNavStatEditor(QWidget *parent, const int vessel_id, const geo
   ui->dspinSpeed->setValue(_geopos.speed);
   ui->dspinLatitude->setValue(_geopos.latitude);
   ui->dspinLongtitude->setValue(_geopos.longtitude);
+  ui->spinROT->setValue(_geopos.rate_of_turn);
   
   ui->checkCourse->setChecked(GPSs->value(vessel_id)->initParams().init_fixed_course);
   ui->checkSpeed->setChecked(GPSs->value(vessel_id)->initParams().init_fixed_speed);
@@ -143,6 +144,7 @@ void SvNavStatEditor::accept()
   _geopos.course = ui->spinCourse->value();
   _geopos.latitude = ui->dspinLatitude->value();
   _geopos.longtitude = ui->dspinLongtitude->value();
+  _geopos.rate_of_turn = ui->spinROT->value();
 
   _gps_init.geoposition = _geopos;
   _gps_init.init_fixed_course = ui->checkCourse->isChecked();
@@ -158,6 +160,7 @@ void SvNavStatEditor::accept()
                             .arg(_navstat.ITU_id)
                             .arg(_geopos.latitude)
                             .arg(_geopos.longtitude)
+                            .arg(_geopos.rate_of_turn)
                             .arg(_vessel_id));
             
       if(QSqlError::NoError != sql.type()) _exception.raise(sql.databaseText());
@@ -179,6 +182,7 @@ void SvNavStatEditor::accept()
       AISs->value(_vessel_id)->setLatitude(_geopos.latitude);
       AISs->value(_vessel_id)->setLongtitude(_geopos.longtitude);
       AISs->value(_vessel_id)->setNavStatus(_navstat);
+      AISs->value(_vessel_id)->setROT(_geopos.rate_of_turn);
       
       
       QDialog::done(Accepted);

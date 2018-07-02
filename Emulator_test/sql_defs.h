@@ -28,6 +28,9 @@
                            "       ais.dynamic_latitude AS dynamic_latitude, " \
                            "       ais.dynamic_longtitude AS dynamic_longtitude, " \
                            "       ais.dynamic_speed AS dynamic_speed, " \
+                           "       ais.dynamic_pitch AS dynamic_pitch, " \
+                           "       ais.dynamic_roll AS dynamic_roll, " \
+                           "       ais.dynamic_rot AS dynamic_rot, " \
                            "       ais.dynamic_utc AS dynamic_utc, " \
                            "       ais.nav_status_ITU_id AS nav_status_ITU_id, " \
                            "       gps.timeout AS gps_timeout, " \
@@ -154,8 +157,9 @@
                                "               dynamic_speed = %2, " CR \
                                "               nav_status_ITU_id = %3, " CR \
                                "               dynamic_latitude = %4, " CR \
-                               "               dynamic_longtitude = %5 " CR \
-                               "WHERE vessel_id = %6 "
+                               "               dynamic_longtitude = %5, " CR \
+                               "               dynamic_rot = %6 " CR \
+                               "WHERE vessel_id = %7 "
 
 #define SQL_UPDATE_NAVSTAT_GPS "UPDATE gps SET init_fixed_course = '%1', " CR \
                                "               init_fixed_speed = '%2', " CR \

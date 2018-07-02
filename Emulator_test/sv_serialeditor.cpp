@@ -70,7 +70,7 @@ void SvSerialEditor::accept()
   params.stopbits = QSerialPort::StopBits(ui->cbStopBits->currentData().toInt());
   
   try {
-    
+    _exception.raise("err.databaseText()");
     QSqlError err = check_params_exists(params.dev_type);
     if(QSqlError::NoError != err.type()) _exception.raise(err.databaseText());
 
@@ -86,17 +86,17 @@ void SvSerialEditor::accept()
     
     if(QSqlError::NoError != err.type()) _exception.raise(err.databaseText());
   
+    QDialog::accept();
   
   }
   
   catch(SvException e) {
     
     _last_error = e.err;
-//        qDebug() << _last_error;
+        qDebug() << _last_error;
     QDialog::reject();
+    
   }
-  
-  QDialog::accept();
   
 }
 

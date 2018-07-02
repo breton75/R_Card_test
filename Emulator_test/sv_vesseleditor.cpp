@@ -12,15 +12,10 @@ SvVesselEditor::SvVesselEditor(QWidget *parent, int vesselId, geo::GEOPOSITION *
   ui->setupUi(this);
   
   showMode = vesselId == -1 ? smNew : smEdit;
-  
   loadCargoTypes();
   loadVesselTypes();
   loadInitRandoms();
   loadNavStats();
-  
-  t_self = self;
-  t_geopos.course = geopos->course;
-  t_geopos.speed = geopos->speed;
   
   if(showMode == smEdit) {
     
@@ -79,8 +74,11 @@ SvVesselEditor::SvVesselEditor(QWidget *parent, int vesselId, geo::GEOPOSITION *
     
     ui->cbNavStatus->setCurrentIndex(ui->cbNavStatus->findData(t_navstat.ITU_id));
     
-    ui->spinCurrentCourse->setValue(geopos->course);
-    ui->dspinCurrentSpeed->setValue(geopos->speed);
+    t_geopos.course = geopos ? geopos->course : 0.0;
+    t_geopos.speed = geopos ? geopos->speed : 10.0;
+        
+    ui->spinCurrentCourse->setValue(t_geopos.course);
+    ui->dspinCurrentSpeed->setValue(t_geopos.speed);
     
   }
   
@@ -111,7 +109,6 @@ SvVesselEditor::SvVesselEditor(QWidget *parent, int vesselId, geo::GEOPOSITION *
   ui->spinTeam->setValue(t_voyage_team);
   
 //  ui->spinGPSTimeout->setValue(t_gps_timeout);
-  
   connect(ui->cbInitCourse, SIGNAL(currentIndexChanged(int)), this, SLOT(on_courseCurrentIndexChanged(int)));
   connect(ui->cbInitSpeed, SIGNAL(currentIndexChanged(int)), this, SLOT(on_speedCurrentIndexChanged(int)));
   

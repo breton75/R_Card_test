@@ -1382,6 +1382,8 @@ gps::gpsInitParams MainWindow::readGPSInitParams(QSqlQuery* q, ais::aisDynamicDa
   result.speed_change_ratio = q->value("init_speed_change_ratio").toUInt();
   result.speed_change_segment = q->value("init_speed_change_segment").toReal();
   
+  result.geoposition = dynamic_data.geoposition;
+  
   // начальные координаты
   if(result.init_random_coordinates || 
      (!result.init_random_coordinates && !dynamic_data.geoposition.isValidCoordinates())) {
@@ -1394,12 +1396,6 @@ gps::gpsInitParams MainWindow::readGPSInitParams(QSqlQuery* q, ais::aisDynamicDa
     dynamic_data.geoposition.longtitude = coord.longtitude;
     
   }
-  else {
-    
-    result.geoposition.latitude = dynamic_data.geoposition.latitude; 
-    result.geoposition.longtitude = dynamic_data.geoposition.longtitude; 
-    
-  }
   
   // начальный курс
   if(result.init_random_course ||
@@ -1409,7 +1405,6 @@ gps::gpsInitParams MainWindow::readGPSInitParams(QSqlQuery* q, ais::aisDynamicDa
     dynamic_data.geoposition.course = result.geoposition.course;
     
   }
-  else result.geoposition.course = dynamic_data.geoposition.course;
   
   // начальная скорость 
   if(result.init_random_speed ||
@@ -1419,7 +1414,6 @@ gps::gpsInitParams MainWindow::readGPSInitParams(QSqlQuery* q, ais::aisDynamicDa
     dynamic_data.geoposition.speed = result.geoposition.speed;
     
   }
-  else result.geoposition.speed = dynamic_data.geoposition.speed;
   
   return result;
 }
@@ -1460,6 +1454,10 @@ ais::aisDynamicData MainWindow::readAISDynamicData(QSqlQuery* q)
   result.geoposition.longtitude = q->value("dynamic_longtitude").isNull() ? -1.0 : q->value("dynamic_longtitude").toReal();
   result.geoposition.course = q->value("dynamic_course").isNull() ? -1.0 : q->value("dynamic_course").toReal();
   result.geoposition.speed = q->value("dynamic_speed").isNull() ? -1.0 : q->value("dynamic_speed").toReal();
+  
+  result.geoposition.pitch = q->value("dynamic_pitch").isNull() ? 0.0 : q->value("dynamic_pitch").toReal();
+  result.geoposition.roll = q->value("dynamic_roll").isNull() ? 0.0 : q->value("dynamic_roll").toReal();
+  result.geoposition.rate_of_turn = q->value("dynamic_rot").isNull() ? 0x80 : q->value("dynamic_rot").toInt();
  
   return result;
 }
@@ -1534,9 +1532,12 @@ void MainWindow::on_bnLAGEditSerialParams_clicked()
 
 void MainWindow::on_bnNAVTEXEditSerialParams_clicked()
 {
+  qDebug() << 101;
   SERIALEDITOR_UI = new SvSerialEditor(_navtex_serial_params, this);
+  qDebug() << 102;
   if(SERIALEDITOR_UI->exec() != QDialog::Accepted) {
-
+    
+    qDebug() << 101 <<  SERIALEDITOR_UI->last_error();
     if(!SERIALEDITOR_UI->last_error().isEmpty()) {
       QMessageBox::critical(this, "Ошибка", QString("Ошибка при изменении параметров:\n%1").arg(SERIALEDITOR_UI->last_error()), QMessageBox::Ok);
     
@@ -1546,7 +1547,7 @@ void MainWindow::on_bnNAVTEXEditSerialParams_clicked()
     }
     
   }
-  
+  qDebug() << 103 << SERIALEDITOR_UI->result();
   _navtex_serial_params.name = SERIALEDITOR_UI->params.name;
   _navtex_serial_params.description = SERIALEDITOR_UI->params.description;
   _navtex_serial_params.baudrate = SERIALEDITOR_UI->params.baudrate;
@@ -1984,37 +1985,27 @@ void MainWindow::on_bnStart_released()
 void MainWindow::on_bnEditNAVTEX_clicked()
 {
   NAVTEXEDITOR_UI = new SvNavtexEditor(this, _navtex->id());
-  if(NAVTEXEDITOR_UI->exec() != QDialog::Accepted) {
-
-    if(!NAVTEXEDITOR_UI->last_error().isEmpty()) {
-      QMessageBox::critical(this, "Ошибка", QString("Ошибка при изменении параметров:\n%1").arg(NAVTEXEDITOR_UI->last_error()), QMessageBox::Ok);
+  
+  switch (NAVTEXEDITOR_UI->exec()) {
     
-      delete NAVTEXEDITOR_UI;
-        
-      return;
-    }
+    case SvNavStatEditor::Error:
+      
+      log << svlog::Time << svlog::Critical 
+          << QString("Ошибка при редактировании записи:\n%1").arg(NAVTEXEDITOR_UI->last_error())
+          << svlog::endl;
+      break;
+      
+    case SvNavStatEditor::Accepted:
+      
+      _navtex->setData(NAVTEXEDITOR_UI->data());
+
+      update_NAVTEX_data();
+      
+      break;
   }
-  
-  nav::navtexData data;
-//  memcpy(&data, _navtex->data(), sizeof(nav::navtexData));
-  
-  data.message_id = NAVTEXEDITOR_UI->t_message_id;
-  data.region_id = NAVTEXEDITOR_UI->t_region_id;
-  data.message_text = NAVTEXEDITOR_UI->t_message_text;
-  data.message_designation = NAVTEXEDITOR_UI->t_message_designation;
-  data.message_letter_id = NAVTEXEDITOR_UI->t_message_letter_id;
-  data.region_letter_id = NAVTEXEDITOR_UI->t_region_letter_id;
-  data.region_station_name = NAVTEXEDITOR_UI->t_region_station_name;
-  data.transmit_frequency = NAVTEXEDITOR_UI->t_transmit_frequency;
-  data.transmit_frequency_id = NAVTEXEDITOR_UI->t_transmit_frequency_id;
-  data.message_last_number = NAVTEXEDITOR_UI->t_message_last_number;
   
   delete NAVTEXEDITOR_UI;
 
-  _navtex->setData(data);
-  
-  update_NAVTEX_data();
-  
 }
 
 

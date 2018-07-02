@@ -1158,7 +1158,7 @@
       <attribute name="title">
        <string>Параметры имитации движения</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_11">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <widget class="QGroupBox" name="groupBox_3">
          <property name="font">
@@ -1170,7 +1170,7 @@
          <property name="title">
           <string>Начальные значения</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
+         <layout class="QVBoxLayout" name="verticalLayout_14">
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_13">
             <item>

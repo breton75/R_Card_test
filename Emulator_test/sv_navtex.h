@@ -20,6 +20,7 @@ namespace nav {
 
   struct navtexData {
     
+    quint32 id;
     quint32 region_id;
     quint32 message_id;
     QString region_station_name;

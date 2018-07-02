@@ -129,6 +129,7 @@ public:
   void setLatitude(const qreal latitude) { _dynamic_data.geoposition.latitude = latitude; }
   void setSpeed(const qreal speed) { _dynamic_data.geoposition.speed = speed; }
   void setCourse(const qreal course) { _dynamic_data.geoposition.course = course; }
+  void setROT(const qint8 rot) { _dynamic_data.geoposition.rate_of_turn = rot; }
   
   void setGeoPosition(const geo::GEOPOSITION& geopos) { _dynamic_data.geoposition = geopos; }
   

@@ -63,7 +63,7 @@ namespace geo {
     qreal speed = -1.0;
     QDateTime utc = QDateTime::currentDateTimeUtc();
     quint8 accuracy = 1;
-    quint8 rate_of_turn = 0;
+    qint8 rate_of_turn = 0x80;
     qreal drift = 0.0;
     qreal pitch = 0.0;    // тангаж в радианах
     qreal roll = 0.0;     // крен в радианах
@@ -82,6 +82,8 @@ namespace geo {
       latitude = other.latitude; longtitude = other.longtitude; 
       course = other.course; speed = other.speed; utc = other.utc;
       accuracy = other.accuracy; full_distance = other.full_distance;
+      rate_of_turn = other.rate_of_turn; drift = other.drift;
+      pitch = other.pitch; roll = other.roll;
       return *this;
     }
     
