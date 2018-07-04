@@ -81,8 +81,8 @@ QString nmea::ais_message_1_2_3(quint8 message_id, QString& talkerID, ais::aisSt
   b6[6] += (nav_status & 0x0F); // 4 значащих бит
   
   /// Rate of turn
-  b6[7] = geopos.rate_of_turn >> 2; // 8 значащих бит
-  b6[8] = (geopos.rate_of_turn << 4) & 0x3F;
+  b6[7] = (geopos.rate_of_turn & 0xFF) >> 2; // 8 значащих бит
+  b6[8] = ((geopos.rate_of_turn & 0xFF) << 4) & 0x3F;
   
   ///  Speed over ground
   quint16 sog16 = quint16(trunc(geopos.speed * 10)) & 0x03FF; // 10 значащих бит
@@ -149,8 +149,10 @@ QString nmea::ais_message_1_2_3(quint8 message_id, QString& talkerID, ais::aisSt
   
   /// формируем сообщение
   QString msg = "";
-  for(int i = 0; i < 28; i++)
+  for(int i = 0; i < 28; i++) {
+//    qDebug() << QString("b[%1] = %2").arg(i).arg(b6[i]) << SIXBIT_SYMBOLS.value(b6[i]);
     msg.append(SIXBIT_SYMBOLS.value(b6[i]));  // message id
+  }
   
   result = QString("!%1VDM,1,1,,A,%2,2*").arg(talkerID).arg(msg);
   
